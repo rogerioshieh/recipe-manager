@@ -1,0 +1,4 @@
+include recipe-manager/schema.sql
+graft recipe-manager/static
+graft recipe-manager/templates
+global-exclude *.pyc
