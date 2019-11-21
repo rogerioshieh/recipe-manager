@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}New Ingredient{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="title">TITLE</label>
+    <input name="title" id="title" value="{{ request.form['title'] }}" required>
+
+    <h4>CALORIC BREAKDOWN</h4>
+    Portion Size
+    <div>
+    <input name="portion_size" type="number" min=".01" step=".01" id="portion_size" value="{{ request.form['portion_size'] }}" required>
+    	<select name="portion_size_unit" id="portion_size_unit" value="{{ request.form['portion_size_unit'] }}" required>
+		    <option value="g">gram(s)</option>
+		    <option value="kg">kg(s)</option>
+		    <option value="oz">ounce(s)</option>
+		    <option value="lb">lb(s)</option>
+		    <option value="cup">cup(s)</option>
+		    <option value="ml">mililiter(s)</option>
+		    <option value="l">liter(s)</option>
+		    <option value="gal">gallon(s)</option>
+		    <option value="T">Tablespoon(s)</option>
+		    <option value="t">teaspoon(s)</option>
+		    <option value="in">inch(es)</option>
+		    <option value="unit">unit(s)</option>   
+  		</select>
+  	</div>
+  	
+  	Protein content
+  	<div>
+  	<input name="protein" type="number" id="protein" value="{{ request.form['protein'] }}" required> grams
+  	</div>
+
+  	Fat content
+  	<div>
+  	<input name="fat" type="number" id="fat" value="{{ request.form['fat'] }}" required> grams
+  	</div>
+
+	Carbs content
+  	<div>
+  	<input name="carbs" type="number" id="carbs" value="{{ request.form['carbs'] }}" required> grams
+  	</div>
+
+  	<label for="notes">NOTES</label>
+    <textarea name="notes" id="notes">{{ request.form['notes'] }}</textarea>
+
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}
