@@ -1,25 +1,31 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Posts{% endblock %}</h1>
-  {% if g.user %}
-    <a class="action" href="{{ url_for('blog.create') }}">New</a>
-  {% endif %}
+  <h1>{% block title %}Ingredients{% endblock %}</h1>
+
+    <a class="action" href="{{ url_for('ingredients.create') }}">Add ingredient</a>
+
 {% endblock %}
 
 {% block content %}
-  {% for post in posts %}
-    <article class="post">
-      <header>
-        <div>
-          <h1>{{ post['title'] }}</h1>
-          <div class="about">by {{ post['username'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
+  {% for ingredient in posts %}
+    <article class="ingredient">
+        <div style="width: 40%; float:left">
+          <h1>{{ ingredient['name'] }} ({{ ingredient['portion_size'] }} {{ ingredient['portion_size_unit'] }})</h1>
         </div>
-        {% if g.user['id'] == post['author_id'] %}
-          <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
-        {% endif %}
-      </header>
-      <p class="body">{{ post['body'] }}</p>
+
+        <div style="width: 40%; float:left">
+          <p><em>Protein</em>: {{ ingredient['protein'] }} g
+            <br><em>Fat</em>: {{ ingredient['fat'] }} g
+            <br> <em>Carbs</em>: {{ ingredient['carbs'] }} g
+            </p>
+        </div>
+
+        <div style="width: 20%">
+        <a class="action" href="{{ url_for('ingredients.update', name_key=ingredient['name_key']) }}">Edit
+          </a>
+        </div>
+
     </article>
     {% if not loop.last %}
       <hr>
