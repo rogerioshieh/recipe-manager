@@ -1,15 +1,13 @@
 """
-Blueprint for ingredients.
+Blueprint for recipes.
 
 Views:
 - Index (displays most recently added ingredients)
 - Create
 - Update
+- Recipe
 - Delete (does not have a template)
 
-TODO:
-- Figure out how to not display decimals
-- Search bar?
 """
 
 from flask import (
@@ -21,69 +19,48 @@ from app.auth import login_required
 from app.db import get_db
 import re
 
-bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
+bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
 @bp.route('/')
 def index():
     db = get_db()
     posts = db.execute(
-        'SELECT name, name_key,portion_size, portion_size_unit, protein, fat, carbs'
-        ' FROM ingredient'
+        'SELECT title'
+        ' FROM recipe'
         ' ORDER BY name ASC'
     ).fetchall()
-    return render_template('ingredients/index.html', posts=posts)
+    return render_template('recipes/index.html', posts=posts)
 
 @bp.route('/create', methods=('GET', 'POST'))
-#@login_required
+# @login_required
 def create():
     if request.method == 'POST':
-        name = request.form['name']
-        name_key = re.sub(r"\s+", "-", name).lower()
-        portion_size = request.form['portion_size']
-        portion_size_unit = request.form['portion_size_unit']
-        protein = request.form['protein']
-        fat = request.form['fat']
-        carbs = request.form['carbs']
-        notes = request.form['notes']
+        title = request.form['title']
+        body = request.form['body']
+        
         error = None
 
         db = get_db()
 
-        #checks if ingredient is already in the database
-        if len(db.execute('SELECT * FROM ingredient WHERE name_key = ?', (name_key,)).fetchall()) != 0:
-        	error = "Ingredient already in the database."
+        if not title:
+            error = 'Title is required.'
 
-        if not name:
-            error = 'Name is required.'
-
-        if not portion_size:
-            error = 'Portion size is required.'
-
-        if not portion_size_unit:
-            error = 'Portion size unit is required.'
-
-        if not protein:
-            error = 'Protein content is required.'
-
-        if not fat:
-            error = 'Fat content is required.'
-
-        if not carbs:
-            error = 'Carbs content is required.'
+        if not body:
+            error = "Instructions are required."
 
         if error is not None:
             flash(error)
 
         else:  
             db.execute(
-                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, notes)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, notes)
+                'INSERT INTO recipe (author_id, title, body)'
+                ' VALUES (?, ?, ?)',
+                (g.user['id'], title, body)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
 
-    return render_template('ingredients/create.html')
+    return render_template('recipes/create.html')
 
 def get_ing(name_key):
     ing = get_db().execute(

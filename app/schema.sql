@@ -30,9 +30,14 @@ CREATE TABLE recipe (
   FOREIGN KEY (author_id) REFERENCES user (id)
 );
 
+/*
+Primary key is title_key (text entry, whitespaces substituted by dash) because the expectation is to have 
+only a few hundred ingredients max, which is reasonable.
+*/
 CREATE TABLE ingredient (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
+  name TEXT NOT NULL UNIQUE,
+  name_key TEXT NOT NULL UNIQUE, --no whitespace, lowercase
   portion_size FLOAT(2) NOT NULL,
   portion_size_unit TEXT CHECK ( portion_size_unit in ('g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit') ) NOT NULL,
   protein FLOAT(1) NOT NULL,
@@ -40,6 +45,9 @@ CREATE TABLE ingredient (
   carbs FLOAT(1) NOT NULL,
   notes TEXT
 );
+
+CREATE INDEX idx_name ON ingredient(name_key)
+;
 
 --these are the junction tables
 CREATE TABLE mealRecipeRelationship(
