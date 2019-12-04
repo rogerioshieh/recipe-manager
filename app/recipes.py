@@ -21,6 +21,19 @@ import re
 
 bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
+def get_ingredients():
+    res = []
+    db = get_db()
+    ings = db.execute(
+        'SELECT *'
+        ' FROM ingredient'
+        ' ORDER BY name ASC'
+    ).fetchall()
+    for ing in ings:
+        res.append(ing['name'])
+
+    return sorted(res)
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -32,7 +45,7 @@ def index():
     return render_template('recipes/index.html', posts=posts)
 
 @bp.route('/create', methods=('GET', 'POST'))
-# @login_required
+@login_required
 def create():
     if request.method == 'POST':
         title = request.form['title']
@@ -60,7 +73,7 @@ def create():
             db.commit()
             return redirect(url_for('ingredients.index'))
 
-    return render_template('recipes/create.html')
+    return render_template('recipes/create.html', ingredients = get_ingredients())
 
 def get_ing(name_key):
     ing = get_db().execute(
