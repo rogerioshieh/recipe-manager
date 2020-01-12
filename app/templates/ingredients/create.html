@@ -7,13 +7,13 @@
 {% block content %}
   <form method="post">
     <label for="name">TITLE</label>
-    <input name="name" id="name" value="{{ request.form['name'] }}" required>
+    <input name="name" id="name" required>
 
     <h4>CALORIC BREAKDOWN</h4>
     Portion Size
     <div>
-    <input name="portion_size" type="number" min=".01" step=".01" id="portion_size" value="{{ request.form['portion_size'] }}" required>
-    	<select name="portion_size_unit" id="portion_size_unit" value="{{ request.form['portion_size_unit'] }}" required>
+    <input name="portion_size" type="number" min=".01" step=".01" id="portion_size"" required>
+    	<select name="portion_size_unit" id="portion_size_unit" required>
 		    <option value="g">gram(s)</option>
 		    <option value="kg">kg(s)</option>
 		    <option value="oz">ounce(s)</option>
@@ -31,21 +31,21 @@
   	
   	Protein content
   	<div>
-  	<input name="protein" type="number" id="protein" value="{{ request.form['protein'] }}" required> grams
+  	<input name="protein" type="number" id="protein" required> grams
   	</div>
 
   	Fat content
   	<div>
-  	<input name="fat" type="number" id="fat" value="{{ request.form['fat'] }}" required> grams
+  	<input name="fat" type="number" id="fat" required> grams
   	</div>
 
 	Carbs content
   	<div>
-  	<input name="carbs" type="number" id="carbs" value="{{ request.form['carbs'] }}" required> grams
+  	<input name="carbs" type="number" id="carbs" required> grams
   	</div>
 
   	<label for="notes">NOTES</label>
-    <textarea name="notes" id="notes">{{ request.form['notes'] }}</textarea>
+    <textarea name="notes" id="notes"></textarea>
 
     <input type="submit" value="Save">
   </form>

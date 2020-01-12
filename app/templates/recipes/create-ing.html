@@ -6,22 +6,25 @@
 
 {% block content %}
   <form method="post">
+
     <label for="title">Title</label>
     <input name="title" id="title" value="{{ request.form['title'] }}" required>
     
     <div>
-      Ingredient:
-      <select name="ingredient" style="width:200px;">
-          {% for ing in ingredients %}
-          	<option value="ingredient">{{ ing }}</option>
-  		    {% endfor %}
-  	  </select>
 
+        {% for q in quantities %}
+          <br>
+            Ingredient #{{ q }}:
+          <select class="js-example-basic-single" name="ing{{ q }}" style="width:200px;">
+              {% for ing in ingredients %}
+                <option>{{ ing }}</option>
+              {% endfor %}
+          </select>
       Quantity:
-      <input name="quantity" id="quantity"  type="number" min=".01" step=".01" value="{{ request.form['title'] }}" required>
+      <input name="quantity{{ q }}" id="quantity{{ q }}"  type="number" min=".01" step=".01" value="{{ request.form['title'] }}" required>
 
       Units:
-      <select name="portion_size_unit" id="portion_size_unit" value="{{ request.form['portion_size_unit'] }}" required>
+      <select name="portion_size_unit{{ q }}" id="portion_size_unit{{ q }}" value="{{ request.form['portion_size_unit'] }}" required>
         <option value="g">gram(s)</option>
         <option value="kg">kg(s)</option>
         <option value="oz">ounce(s)</option>
@@ -36,10 +39,16 @@
         <option value="unit">unit(s)</option>   
       </select>
 
+{% endfor %}
+    <br>
     </div>
 
     <label for="body">Instructions</label>
     <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
     <input type="submit" value="Save">
+
   </form>
+
+ 
+
 {% endblock %}
