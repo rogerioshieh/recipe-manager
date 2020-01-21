@@ -3,7 +3,7 @@
 {% block header %}
   <h1>{% block title %}RECIPES (displayed chronologically){% endblock %}</h1>
   {% if g.user %}
-    <a class="action" href="{{ url_for('recipes.create') }}">New</a>
+    <a class="action" href="/recipes/create">New</a>
   {% endif %}
 {% endblock %}
 
@@ -12,14 +12,42 @@
     <article class="post">
       <header>
         <div>
-          <h1>{{ post['title'] }}</h1>
-          <div class="about">by {{ post['username'] }} </div>
+          <h1>{{ post[0]['title'] }}</h1>
+          <div class="about">by {{ post[0]['author_ID'] }} </div>
         </div>
-        {% if g.user['id'] == post['author_id'] %}
-          <a class="action" href="{{ url_for('recipes.update', name_key=post['id']) }}">Edit</a>
-        {% endif %}
+
+          <a class="action" href="{{ url_for('recipes.update', name_key=post[0]['id']) }}">Edit</a>
+
       </header>
-      <p class="body">{{ post['body'] }}</p>
+
+    <table>
+        <tr>
+            {% for ing in post[2] %}
+                <td style="background-color: lightgray">
+            {{ ing }}
+                {% if not loop.last %}
+                    <br>
+                {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for ing in post[1] %}
+                <td>
+        {{ ing['quantity'] }} {{ ing['units'] }}
+        {% if not loop.last %}
+        <br>
+        {% endif %}
+                </td>
+    {% endfor %}
+
+        </tr>
+    </table>
+
+    <h4>Nutrition (per serving): </h4>
+
+<h4>Steps:</h4>
+      <p class="body">{{ post[0]['body'] }}</p>
     </article>
     {% if not loop.last %}
       <hr>

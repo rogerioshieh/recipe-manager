@@ -27,6 +27,7 @@ CREATE TABLE recipe (
   author_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
+  servings INTEGER NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id)
 );
 
