@@ -41,6 +41,9 @@
 
 {% endfor %}
     <br>
+     Number of servings:
+     <input name="servings" id="servings" type="number" min="1" step="1" value="{{ request.form['servings'] }}" required>
+    <br>
     </div>
 
     <label for="body">Instructions</label>

@@ -44,7 +44,29 @@ def index():
         'SELECT *'
         ' FROM recipe'
     ).fetchall()
-    return render_template('recipes/index.html', posts=posts)
+
+    res = []
+    for i in range(len(posts)):
+        recipeID = posts[i]['id']
+        temp = [posts[i]]
+        temp.append(db.execute(
+            'SELECT ingredientID, quantity, units'
+            ' FROM recipeIngredientRelationship'
+            ' WHERE recipeID=(?)', (recipeID,)
+        ).fetchall())
+
+        ing_names = []
+        if temp[1]:
+            for ing in temp[1]:
+                ing_name = db.execute(
+                    'SELECT name FROM ingredient WHERE id=?',
+                    (str(ing['ingredientID'])),).fetchall()[0]['name']
+                ing_names.append(ing_name)
+
+        temp.append(ing_names)
+        res.append(temp)
+
+    return render_template('recipes/index.html', posts=res)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -70,12 +92,13 @@ def no_ing():
         except: #this is the creation of recipe itself
             title = request.form['title']
             body = request.form['body']
+            servings = request.form['servings']
 
+            # TODO: have this in a function parse_ing(request.form)
             number_ingredients = int((len(request.form)-2) / 3)
-
             ingredients = [] #each entry: (ingredient, quantity, portion_size)
-
             temp = []
+
             for entry in request.form.keys():
                 if entry == 'title' or entry == 'body':
                     if len(temp) != 0 and len(temp) % number_ingredients == 0:
@@ -103,10 +126,26 @@ def no_ing():
 
             else:
                 db.execute(
-                    'INSERT INTO recipe (author_id, title, body)'
-                    ' VALUES (?, ?, ?)',
-                    (g.user['id'], title, body)
+                    'INSERT INTO recipe (author_id, title, body, servings)'
+                    ' VALUES (?, ?, ?, ?)',
+                    (g.user['username'], title, body, servings)
                 )
+
+                recipeID = db.execute(
+                    'SELECT id FROM recipe WHERE title=?',
+                    (title,)
+                ).fetchall()
+
+                for ing in ingredients:
+                    ingID = db.execute(
+                        'SELECT id from ingredient WHERE name_key=(?)',
+                        (re.sub(r"\s+", "-", ing[0]).lower(),)
+                    ).fetchall()
+                    db.execute(
+                        'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
+                        ' VALUES (?, ?, ?, ?)',
+                        (recipeID[0]['id'], ingID[0]['id'], ing[1], ing[2])
+                    )
                 db.commit()
                 return redirect(url_for('recipes.index'))
 
@@ -120,6 +159,7 @@ def create():
 
         title = request.form['title']
         body = request.form['body']
+        servings = request.form['servings']
 
         error = None
 
@@ -136,9 +176,9 @@ def create():
 
         else:
             db.execute(
-                'INSERT INTO recipe (author_id, title, body)'
+                'INSERT INTO recipe (author_id, title, body, servings)'
                 ' VALUES (?, ?, ?)',
-                (g.user['id'], title, body)
+                (g.user['id'], title, body, servings)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
