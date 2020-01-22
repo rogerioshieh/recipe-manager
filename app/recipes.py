@@ -37,6 +37,10 @@ def get_ingredients():
         res.append(ing['name'])
     return sorted(res)
 
+def get_units():
+
+    return ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -68,6 +72,24 @@ def index():
 
     return render_template('recipes/index.html', posts=res)
 
+def parse_ing(request_form):
+    number_ingredients = int((len(request_form) - 2) / 3)
+    ingredients = []  # each entry: (ingredient, quantity, portion_size)
+    temp = []
+
+    for entry in request_form.keys():
+        if entry == 'title' or entry == 'body':
+            if len(temp) != 0 and len(temp) % number_ingredients == 0:
+                ingredients.append(tuple(temp))
+            continue
+
+        if len(temp) != 0 and len(temp) % number_ingredients == 0:
+            ingredients.append(tuple(temp))
+            temp = [request_form[entry]]
+        else:
+            temp.append(request_form[entry])
+
+    return ingredients
 
 @bp.route('/create', methods=('GET', 'POST'))
 def no_ing():
@@ -94,22 +116,7 @@ def no_ing():
             body = request.form['body']
             servings = request.form['servings']
 
-            # TODO: have this in a function parse_ing(request.form)
-            number_ingredients = int((len(request.form)-2) / 3)
-            ingredients = [] #each entry: (ingredient, quantity, portion_size)
-            temp = []
-
-            for entry in request.form.keys():
-                if entry == 'title' or entry == 'body':
-                    if len(temp) != 0 and len(temp) % number_ingredients == 0:
-                        ingredients.append(tuple(temp))
-                    continue
-
-                if len(temp) != 0 and len(temp) % number_ingredients == 0:
-                    ingredients.append(tuple(temp))
-                    temp = [request.form[entry]]
-                else:
-                    temp.append(request.form[entry])
+            ingredients = parse_ing(request.form)
 
             error = None
 
@@ -193,6 +200,8 @@ def get_recipe(name_key):
         (int(name_key),)
     ).fetchone()
 
+    print(recipe['title'])
+
     if recipe is None:
         abort(404, "{0} is not in the Ingredient table.".format(name_key))
 
@@ -205,33 +214,106 @@ def update(name_key):
 
     if request.method == 'POST':
 
-        title = request.form['title']
-        body = request.form['body']
+        try:  # this determines the number of ingredients
+            number_ingredients = int(request.form['number'])
+            error = None
 
-        error = None
+            if not request.form['number']:
+                error = "Number of ingredients is required."
 
-        db = get_db()
+            if error is not None:
+                flash(error)
 
-        if not title:
-            error = 'Title is required.'
+            else:
+                quantities = []
+                for q in range(1, number_ingredients + 1):
+                    quantities.append(q)
+                return render_template('recipes/create-ing.html', ingredients=get_ingredients(), quantities=quantities)
 
-        if not body:
-            error = "Instructions are required."
+        except:  # this is the creation of recipe itself
+            title = request.form['title']
+            body = request.form['body']
+            servings = request.form['servings']
 
-        if error is not None:
-            flash(error)
+            ingredients = parse_ing(request.form)
 
-        else:
+            error = None
+
             db = get_db()
-            db.execute(
-                'UPDATE recipe SET title = ?, body = ?'
-                ' WHERE id = ?',
-                (title, body, name_key)
-            )
-            db.commit()
-            return redirect(url_for('recipes.index'))
 
-    return render_template('recipes/update.html', recipe=recipe, ingredients=get_ingredients())
+            if not title:
+                error = 'Title is required.'
+
+            if not body:
+                error = "Instructions are required."
+
+            if error is not None:
+                flash(error)
+
+            else:
+                recipeID = db.execute(
+                    'SELECT id FROM recipe WHERE title=?',
+                    (title,)
+                ).fetchall()
+
+                db.execute(
+                    'UPDATE recipe SET author_id = ?, title = ?, body = ?, servings = ?)'
+                    'WHERE id = ?',
+                    (g.user['username'], title, body, servings, recipeID)
+                )
+
+                for ing in ingredients:
+                    ingID = db.execute(
+                        'SELECT id from ingredient WHERE name_key=(?)',
+                        (re.sub(r"\s+", "-", ing[0]).lower(),)
+                    ).fetchall()
+
+                    db.execute(
+                        'UPDATE recipeIngredientRelationship SET recipeID = ?, ingredientID = ?, quantity = ?, units = ?'
+                        'WHERE recipeID = ?',
+                        (recipeID[0]['id'], ingID[0]['id'], ing[1], ing[2], recipeID[0]['id'])
+                    )
+                db.commit()
+                return redirect(url_for('recipes.index'))
+
+    db = get_db()
+
+    #pre-populated entries
+    r_quantities = []
+    r_units = []
+    r_ings = get_ingredients()
+
+    for ing in r_ings:
+        ingID = db.execute(
+            'SELECT id from ingredient WHERE name_key=(?)',
+            (re.sub(r"\s+", "-", ing).lower(),)
+        ).fetchone()
+
+        print(ingID['id'])
+
+        quant = db.execute(
+            'SELECT quantity FROM recipeIngredientRelationship'
+            ' WHERE recipeID = ? '
+            'AND ingredientID = ?',
+            (name_key, ingID['id'])
+        ).fetchone()
+        r_quantities.append(quant['quantity'])
+
+        unit = db.execute(
+            'SELECT units FROM recipeIngredientRelationship'
+            ' WHERE recipeID = ? '
+            'AND ingredientID = ?',
+            (name_key, ingID['id'])
+        ).fetchone()
+        r_units.append(unit['units'])
+
+
+    pre_pop = {"quantity": r_quantities, "units": r_units, "ings": r_ings}
+    print(pre_pop)
+
+    return render_template('recipes/update.html', prepop=pre_pop, recipe=recipe,
+                           quantities=[i for i in range(1, len(get_ingredients()) + 1)],
+                           ingredients=get_ingredients(), units=get_units())
 
 @bp.route('/<name_key>/delete', methods=('POST',))
 def delete(name_key):
