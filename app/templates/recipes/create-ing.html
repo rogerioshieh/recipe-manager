@@ -1,57 +1,58 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}New Recipe{% endblock %}</h1>
+    <h1>{% block title %}New Recipe{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-  <form method="post">
+    <form method="post">
 
-    <label for="title">Title</label>
-    <input name="title" id="title" value="{{ request.form['title'] }}" required>
-    
-    <div>
+        <label for="title">Title</label>
+        <input name="title" id="title" value="{{ request.form['title'] }}" required>
 
-        {% for q in quantities %}
-          <br>
-            Ingredient #{{ q }}:
-          <select class="js-example-basic-single" name="ing{{ q }}" style="width:200px;">
-              {% for ing in ingredients %}
-                <option>{{ ing }}</option>
-              {% endfor %}
-          </select>
-      Quantity:
-      <input name="quantity{{ q }}" id="quantity{{ q }}"  type="number" min=".01" step=".01" value="{{ request.form['title'] }}" required>
+        <div>
 
-      Units:
-      <select name="portion_size_unit{{ q }}" id="portion_size_unit{{ q }}" value="{{ request.form['portion_size_unit'] }}" required>
-        <option value="g">gram(s)</option>
-        <option value="kg">kg(s)</option>
-        <option value="oz">ounce(s)</option>
-        <option value="lb">lb(s)</option>
-        <option value="cup">cup(s)</option>
-        <option value="ml">mililiter(s)</option>
-        <option value="l">liter(s)</option>
-        <option value="gal">gallon(s)</option>
-        <option value="T">Tablespoon(s)</option>
-        <option value="t">teaspoon(s)</option>
-        <option value="in">inch(es)</option>
-        <option value="unit">unit(s)</option>   
-      </select>
+            {% for q in quantities %}
+                <br>
+                Ingredient #{{ q }}:
+                <select class="js-example-basic-single" name="ing{{ q }}" style="width:200px;">
+                    {% for ing in ingredients %}
+                        <option>{{ ing }}</option>
+                    {% endfor %}
+                </select>
+                Quantity:
+                <input name="quantity{{ q }}" id="quantity{{ q }}" type="number" min=".01" step=".01"
+                       value="{{ request.form['title'] }}" required>
 
-{% endfor %}
-    <br>
-     Number of servings:
-     <input name="servings" id="servings" type="number" min="1" step="1" value="{{ request.form['servings'] }}" required>
-    <br>
-    </div>
+                Units:
+                <select name="portion_size_unit{{ q }}" id="portion_size_unit{{ q }}"
+                        value="{{ request.form['portion_size_unit'] }}" required>
+                    <option value="g">gram(s)</option>
+                    <option value="kg">kg(s)</option>
+                    <option value="oz">ounce(s)</option>
+                    <option value="lb">lb(s)</option>
+                    <option value="cup">cup(s)</option>
+                    <option value="ml">mililiter(s)</option>
+                    <option value="l">liter(s)</option>
+                    <option value="gal">gallon(s)</option>
+                    <option value="T">Tablespoon(s)</option>
+                    <option value="t">teaspoon(s)</option>
+                    <option value="in">inch(es)</option>
+                    <option value="unit">unit(s)</option>
+                </select>
 
-    <label for="body">Instructions</label>
-    <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
-    <input type="submit" value="Save">
+            {% endfor %}
+            <br>
+            Number of servings:
+            <input name="servings" id="servings" type="number" min="1" step="1" value="{{ request.form['servings'] }}"
+                   required>
+            <br>
+        </div>
 
-  </form>
+        <label for="body">Instructions</label>
+        <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
+        <input type="submit" value="Save">
 
- 
+    </form>
 
 {% endblock %}

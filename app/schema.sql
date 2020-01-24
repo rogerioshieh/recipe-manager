@@ -32,7 +32,7 @@ CREATE TABLE recipe (
 );
 
 /*
-Primary key is title_key (text entry, whitespaces substituted by dash) because the expectation is to have 
+Primary key is name_key (text entry, whitespaces substituted by dash) because the expectation is to have
 only a few hundred ingredients max, which is reasonable.
 */
 CREATE TABLE ingredient (
@@ -44,6 +44,7 @@ CREATE TABLE ingredient (
   protein FLOAT(1) NOT NULL,
   fat FLOAT(1) NOT NULL,
   carbs FLOAT(1) NOT NULL,
+  cals INT NOT NULL,
   notes TEXT
 );
 

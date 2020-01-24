@@ -27,10 +27,11 @@ bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 def index():
     db = get_db()
     posts = db.execute(
-        'SELECT name, name_key,portion_size, portion_size_unit, protein, fat, carbs'
+        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs'
         ' FROM ingredient'
         ' ORDER BY name ASC'
     ).fetchall()
+    return jsonify(posts)
     return render_template('ingredients/index.html', posts=posts)
 
 @bp.route('/create', methods=('GET', 'POST'))

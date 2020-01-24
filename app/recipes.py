@@ -41,6 +41,10 @@ def get_units():
 
     return ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 
+def render_recipe(recipe_id):
+
+    pass
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -50,8 +54,11 @@ def index():
     ).fetchall()
 
     res = []
+    nutritions = [] #per ing: [Carbs, Protein, Fat, Calories]
+
     for i in range(len(posts)):
         recipeID = posts[i]['id']
+        servings = posts[i]['servings']
         temp = [posts[i]]
         temp.append(db.execute(
             'SELECT ingredientID, quantity, units'
@@ -67,10 +74,27 @@ def index():
                     (str(ing['ingredientID'])),).fetchall()[0]['name']
                 ing_names.append(ing_name)
 
+                nutrition = db.execute(
+                    'SELECT carbs, fat, protein FROM ingredient WHERE id=?',
+                    (str(ing['ingredientID'])),).fetchone()
+
+                nutritions.append([
+                    round(nutrition['carbs']/servings, 1),
+                    round(nutrition['fat']/servings, 1),
+                    round(nutrition['protein']/servings, 1),
+                    1000
+                    ]
+                )
+
+
         temp.append(ing_names)
+        temp.append(nutritions)
+
         res.append(temp)
 
-    return render_template('recipes/index.html', posts=res)
+    print(res)
+
+    return render_template('recipes/index.html', posts=res, nutritions=nutritions)
 
 def parse_ing(request_form):
     number_ingredients = int((len(request_form) - 2) / 3)
