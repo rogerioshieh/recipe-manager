@@ -31,7 +31,7 @@ def index():
         ' FROM ingredient'
         ' ORDER BY name ASC'
     ).fetchall()
-    return jsonify(posts)
+    #return jsonify(posts)
     return render_template('ingredients/index.html', posts=posts)
 
 @bp.route('/create', methods=('GET', 'POST'))
