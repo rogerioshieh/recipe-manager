@@ -3,34 +3,68 @@
 <title>{% block title %}{% endblock %} - My Recipe Manager</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
 
 <nav>
-  <h1>My Recipe Manager</h1>
+    <h1>My Recipe Manager</h1>
     <ul>
-    {% if g.user %}
-      <li><span>{{ g.user['username'] }}</span>
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% else %}
-      <li><a href="{{ url_for('auth.register') }}">Register</a>
-      <li><a href="{{ url_for('auth.login') }}">Log In</a>
-    {% endif %}
-  </ul>
+        {% if g.user %}
+            <li><span>{{ g.user['username'] }}</span>
+            <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+                {% else %}
+            <li><a href="{{ url_for('auth.register') }}">Register</a>
+            <li><a href="{{ url_for('auth.login') }}">Log In</a>
+        {% endif %}
+    </ul>
 </nav>
 <section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
+    <header>
+        {% block header %}{% endblock %}
+    </header>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
 </section>
 
+<script>
+/*
+This script is identical to the above JavaScript function.
+*/
+var ct = 1;
+
+function count()
+{
+    console.log(ct);
+    return ct;
+}
+
+function new_link()
+{
+	ct++;
+	var div1 = document.createElement('div');
+	div1.id = ct;
+	// link to delete extended form elements
+	var delLink = '<a href="javascript:new_link()">Add New</a>  <a href="javascript:delIt('+ ct +')">Delete</a>';
+	div1.innerHTML = document.getElementById('newlinktpl').innerHTML + delLink;
+	document.getElementById('newlink').appendChild(div1);
+	console.log(ct)
+}
+// function to delete the newly added set of elements
+function delIt(eleId)
+{
+	d = document;
+	var ele = d.getElementById(eleId);
+	var parentEle = d.getElementById('newlink');
+	parentEle.removeChild(ele);
+}
+</script>
 
 <script type="text/javascript">
-$(document).ready(function() {
-  $('.js-example-basic-single').select2();
-  });
+    $(document).ready(function () {
+        $('.js-example-basic-single').select2();
+    });
 </script>
+
+

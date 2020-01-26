@@ -86,7 +86,6 @@ def index():
                     ]
                 )
 
-
         temp.append(ing_names)
         temp.append(nutritions)
 
@@ -118,7 +117,7 @@ def parse_ing(request_form):
 @bp.route('/create', methods=('GET', 'POST'))
 def no_ing():
     if request.method == 'POST':
-
+        print(request.form)
         try: #this determines the number of ingredients
             number_ingredients = int(request.form['number'])
             error = None
@@ -180,7 +179,7 @@ def no_ing():
                 db.commit()
                 return redirect(url_for('recipes.index'))
 
-    return render_template('recipes/create.html')
+    return render_template('recipes/create-ing.html', ingredients=get_ingredients())
 
 
 @bp.route('/create-ing', methods=('GET', 'POST'))
