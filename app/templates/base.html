@@ -28,37 +28,60 @@
     {% block content %}{% endblock %}
 </section>
 
-<script>
-/*
-This script is identical to the above JavaScript function.
-*/
-var ct = 1;
+<script type="text/javascript">
 
-function count()
-{
-    console.log(ct);
-    return ct;
-}
+    /*
+    This script is identical to the above JavaScript function.
+    */
+    var ct = 1;
 
-function new_link()
-{
-	ct++;
-	var div1 = document.createElement('div');
-	div1.id = ct;
-	// link to delete extended form elements
-	var delLink = '<a href="javascript:new_link()">Add New</a>  <a href="javascript:delIt('+ ct +')">Delete</a>';
-	div1.innerHTML = document.getElementById('newlinktpl').innerHTML + delLink;
-	document.getElementById('newlink').appendChild(div1);
-	console.log(ct)
-}
-// function to delete the newly added set of elements
-function delIt(eleId)
-{
-	d = document;
-	var ele = d.getElementById(eleId);
-	var parentEle = d.getElementById('newlink');
-	parentEle.removeChild(ele);
-}
+    function newlink() {
+        ct++;
+        var div1 = document.createElement('div');
+        div1.id = ct;
+        div1.classList.add('ingredient');
+        // link to delete extended form elements
+        var delLink = '<a href="javascript:newlink()">Add New</a>  <a href="javascript:delIt(' + ct + ')">Delete</a>';
+        div1.innerHTML = document.getElementById('newlinktpl').innerHTML + delLink;
+        document.getElementById('1').appendChild(div1);
+    }
+
+    // function to delete the newly added set of elements
+    function delIt(eleId) {
+        d = document;
+        var ele = d.getElementById(eleId);
+        var parentEle = d.getElementById('1');
+        parentEle.removeChild(ele);
+    }
+
+    function handleSubmit() {
+
+        var data = {};
+
+        data.title = document.getElementById("title").value;
+        data.servings = document.getElementById("servings").value;
+        data.ingredients = [];
+        data.instructions = document.getElementById("instructions").value;
+
+        var ingredients = document.getElementsByClassName('ingredient');
+
+        for (let ingredient of ingredients) {
+            let ing = {};
+            ing.ingName = ingredient.querySelector(".ing").value;
+            ing.quantity = ingredient.querySelector(".quantity").value;
+            ing.portion = ingredient.querySelector(".portion_size_unit").value;
+            data.ingredients.push(ing);
+        }
+
+        fetch('/recipes/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        });
+
+    }
 </script>
 
 <script type="text/javascript">

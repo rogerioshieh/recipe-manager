@@ -78,6 +78,7 @@ def index():
                     'SELECT carbs, fat, protein FROM ingredient WHERE id=?',
                     (str(ing['ingredientID'])),).fetchone()
 
+                if not servings: servings = 1
                 nutritions.append([
                     round(nutrition['carbs']/servings, 1),
                     round(nutrition['fat']/servings, 1),
@@ -97,6 +98,7 @@ def index():
 
 def parse_ing(request_form):
     number_ingredients = int((len(request_form) - 2) / 3)
+    number_ingredients = 2
     ingredients = []  # each entry: (ingredient, quantity, portion_size)
     temp = []
 
@@ -116,68 +118,115 @@ def parse_ing(request_form):
 
 @bp.route('/create', methods=('GET', 'POST'))
 def no_ing():
+
     if request.method == 'POST':
-        print(request.form)
-        try: #this determines the number of ingredients
-            number_ingredients = int(request.form['number'])
-            error = None
 
-            if not request.form['number']:
-                error = "Number of ingredients is required."
+        db = get_db()
+        data = request.get_json()
 
-            if error is not None:
-                flash(error)
+        error = None
 
-            else:
-                quantities = []
-                for q in range(1, number_ingredients+1):
-                    quantities.append(q)
-                return render_template('recipes/create-ing.html', ingredients=get_ingredients(), quantities=quantities)
+        if not data['title']:
+            error = 'Title is required.'
 
-        except: #this is the creation of recipe itself
-            title = request.form['title']
-            body = request.form['body']
-            servings = request.form['servings']
+        if not data['servings']:
+            error = "Number of servings is required."
 
-            ingredients = parse_ing(request.form)
+        if not data['instructions']:
+            error = "Instructions are required."
 
-            error = None
+        if error is not None:
+            flash(error)
 
-            db = get_db()
+        else:
+            db.execute(
+                'INSERT INTO recipe (author_id, title, body, servings)'
+                ' VALUES (?, ?, ?, ?)',
+                (g.user['username'], data['title'], data['instructions'], data['servings'])
+            )
 
-            if not title:
-                error = 'Title is required.'
+            recipeID = db.execute(
+                'SELECT id FROM recipe WHERE title=?',
+                (data['title'],)
+            ).fetchone()
 
-            if not body:
-                error = "Instructions are required."
-
-            if error is not None:
-                flash(error)
-
-            else:
+            for ing in data['ingredients']:
+                ingID = db.execute(
+                    'SELECT id from ingredient WHERE name_key=(?)',
+                    (re.sub(r"\s+", "-", ing['ingName']).lower(),)
+                ).fetchone()
                 db.execute(
-                    'INSERT INTO recipe (author_id, title, body, servings)'
+                    'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
                     ' VALUES (?, ?, ?, ?)',
-                    (g.user['username'], title, body, servings)
+                    (recipeID['id'], ingID['id'], ing['quantity'], ing['portion'])
                 )
+            db.commit()
+            return redirect(url_for('recipes.index'))
 
-                recipeID = db.execute(
-                    'SELECT id FROM recipe WHERE title=?',
-                    (title,)
-                ).fetchall()
-
-                for ing in ingredients:
-                    ingID = db.execute(
-                        'SELECT id from ingredient WHERE name_key=(?)',
-                        (re.sub(r"\s+", "-", ing[0]).lower(),)
-                    ).fetchall()
-                    db.execute(
-                        'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
-                        ' VALUES (?, ?, ?, ?)',
-                        (recipeID[0]['id'], ingID[0]['id'], ing[1], ing[2])
-                    )
-                db.commit()
-                return redirect(url_for('recipes.index'))
+        #
+        # print("HELLO, we're in POST")
+        # print(request.body)
+        #
+        # try: #this determines the number of ingredients
+        #     number_ingredients = int(request.form['number'])
+        #     error = None
+        #
+        #     if not request.form['number']:
+        #         error = "Number of ingredients is required."
+        #
+        #     if error is not None:
+        #         flash(error)
+        #
+        #     else:
+        #         quantities = []
+        #         for q in range(1, number_ingredients+1):
+        #             quantities.append(q)
+        #         return render_template('recipes/create-ing.html', ingredients=get_ingredients(), quantities=quantities)
+        #
+        # except: #this is the creation of recipe itself
+        #     title = request.form['title']
+        #     instructions = request.form['instructions']
+        #     servings = request.form['servings']
+        #
+        #     ingredients = parse_ing(request.form)
+        #
+        #     error = None
+        #
+        #     db = get_db()
+        #
+        #     if not title:
+        #         error = 'Title is required.'
+        #
+        #     if not instructions:
+        #         error = "Instructions are required."
+        #
+        #     if error is not None:
+        #         flash(error)
+        #
+        #     else:
+        #         db.execute(
+        #             'INSERT INTO recipe (author_id, title, body, servings)'
+        #             ' VALUES (?, ?, ?, ?)',
+        #             (g.user['username'], title, instructions, servings)
+        #         )
+        #
+        #         recipeID = db.execute(
+        #             'SELECT id FROM recipe WHERE title=?',
+        #             (title,)
+        #         ).fetchall()
+        #
+        #         for ing in ingredients:
+        #             ingID = db.execute(
+        #                 'SELECT id from ingredient WHERE name_key=(?)',
+        #                 (re.sub(r"\s+", "-", ing[0]).lower(),)
+        #             ).fetchall()
+        #             db.execute(
+        #                 'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
+        #                 ' VALUES (?, ?, ?, ?)',
+        #                 (recipeID[0]['id'], ingID[0]['id'], ing[1], ing[2])
+        #             )
+        #         db.commit()
+        #         return redirect(url_for('recipes.index'))
 
     return render_template('recipes/create-ing.html', ingredients=get_ingredients())
 
@@ -213,7 +262,7 @@ def create():
             db.commit()
             return redirect(url_for('ingredients.index'))
 
-    return render_template('recipes/create-ing.html', ingredients=get_ingredients(), quantity=quantity)
+    return render_template('recipes/create-ing.html', ingredients=get_ingredients())
 
 def get_recipe(name_key):
     recipe = get_db().execute(
