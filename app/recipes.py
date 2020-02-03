@@ -59,7 +59,7 @@ def index():
     for i in range(len(posts)):
         recipeID = posts[i]['id']
         servings = posts[i]['servings']
-        temp = [posts[i]]
+        temp = [posts[i]] #will contain recipe then ingredients
         temp.append(db.execute(
             'SELECT ingredientID, quantity, units'
             ' FROM recipeIngredientRelationship'
@@ -68,31 +68,42 @@ def index():
 
         ing_names = []
         if temp[1]:
+            nutrition_totals = [0, 0, 0, 0] #carbs, protein, fat, calories
             for ing in temp[1]:
+
+                ing_id = str(ing['ingredientID'])
+
                 ing_name = db.execute(
                     'SELECT name FROM ingredient WHERE id=?',
-                    (str(ing['ingredientID'])),).fetchall()[0]['name']
+                    (ing_id)).fetchone()['name']
                 ing_names.append(ing_name)
 
                 nutrition = db.execute(
-                    'SELECT carbs, fat, protein FROM ingredient WHERE id=?',
-                    (str(ing['ingredientID'])),).fetchone()
+                    'SELECT carbs, fat, protein, calories FROM ingredient WHERE id=?',
+                    (ing_id)).fetchone()
 
-                if not servings: servings = 1
+                if not servings: #prevents division by 0 in case servings was no added correctly
+                    servings = 1
+
                 nutritions.append([
                     round(nutrition['carbs']/servings, 1),
                     round(nutrition['fat']/servings, 1),
                     round(nutrition['protein']/servings, 1),
-                    1000
+                    round(nutrition['calories']/servings, 1)
                     ]
                 )
 
+                nutrition_totals[0] += nutrition['carbs']
+                nutrition_totals[1] += nutrition['fat']
+                nutrition_totals[2] += nutrition['protein']
+                nutrition_totals[3] += nutrition['calories']
+
         temp.append(ing_names)
         temp.append(nutritions)
+        temp.append(nutrition_totals)
+        print(temp)
 
         res.append(temp)
-
-    print(res)
 
     return render_template('recipes/index.html', posts=res, nutritions=nutritions)
 
@@ -155,78 +166,16 @@ def no_ing():
                     'SELECT id from ingredient WHERE name_key=(?)',
                     (re.sub(r"\s+", "-", ing['ingName']).lower(),)
                 ).fetchone()
+
                 db.execute(
                     'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
                     ' VALUES (?, ?, ?, ?)',
                     (recipeID['id'], ingID['id'], ing['quantity'], ing['portion'])
                 )
-            db.commit()
-            return redirect(url_for('recipes.index'))
 
-        #
-        # print("HELLO, we're in POST")
-        # print(request.body)
-        #
-        # try: #this determines the number of ingredients
-        #     number_ingredients = int(request.form['number'])
-        #     error = None
-        #
-        #     if not request.form['number']:
-        #         error = "Number of ingredients is required."
-        #
-        #     if error is not None:
-        #         flash(error)
-        #
-        #     else:
-        #         quantities = []
-        #         for q in range(1, number_ingredients+1):
-        #             quantities.append(q)
-        #         return render_template('recipes/create-ing.html', ingredients=get_ingredients(), quantities=quantities)
-        #
-        # except: #this is the creation of recipe itself
-        #     title = request.form['title']
-        #     instructions = request.form['instructions']
-        #     servings = request.form['servings']
-        #
-        #     ingredients = parse_ing(request.form)
-        #
-        #     error = None
-        #
-        #     db = get_db()
-        #
-        #     if not title:
-        #         error = 'Title is required.'
-        #
-        #     if not instructions:
-        #         error = "Instructions are required."
-        #
-        #     if error is not None:
-        #         flash(error)
-        #
-        #     else:
-        #         db.execute(
-        #             'INSERT INTO recipe (author_id, title, body, servings)'
-        #             ' VALUES (?, ?, ?, ?)',
-        #             (g.user['username'], title, instructions, servings)
-        #         )
-        #
-        #         recipeID = db.execute(
-        #             'SELECT id FROM recipe WHERE title=?',
-        #             (title,)
-        #         ).fetchall()
-        #
-        #         for ing in ingredients:
-        #             ingID = db.execute(
-        #                 'SELECT id from ingredient WHERE name_key=(?)',
-        #                 (re.sub(r"\s+", "-", ing[0]).lower(),)
-        #             ).fetchall()
-        #             db.execute(
-        #                 'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
-        #                 ' VALUES (?, ?, ?, ?)',
-        #                 (recipeID[0]['id'], ingID[0]['id'], ing[1], ing[2])
-        #             )
-        #         db.commit()
-        #         return redirect(url_for('recipes.index'))
+            db.commit()
+            #https://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
+            return redirect(url_for('recipes.index'))
 
     return render_template('recipes/create-ing.html', ingredients=get_ingredients())
 
@@ -387,7 +336,7 @@ def update(name_key):
                            quantities=[i for i in range(1, len(get_ingredients()) + 1)],
                            ingredients=get_ingredients(), units=get_units())
 
-@bp.route('/<name_key>/delete', methods=('POST',))
+@bp.route('/<name_key>/delete', methods=('GET', 'POST',))
 def delete(name_key):
     get_recipe(name_key)
     db = get_db()

@@ -54,8 +54,9 @@
         parentEle.removeChild(ele);
     }
 
-    function handleSubmit() {
+    function handleSubmit(e) {
 
+        e.preventDefault();
         var data = {};
 
         data.title = document.getElementById("title").value;
@@ -80,6 +81,8 @@
             },
             body: JSON.stringify(data)
         });
+
+        alert(JSON.stringify(data));
 
     }
 </script>

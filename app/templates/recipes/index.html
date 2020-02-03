@@ -21,7 +21,7 @@
             </header>
 
             <table>
-            <caption>INGREDIENTS</caption>
+                <caption>INGREDIENTS</caption>
                 <tr>
                     {% for ing in post[2] %}
 
@@ -46,7 +46,7 @@
                 </tr>
             </table>
 
-        <br>
+            <br>
             <table class="table table-hover">
                 <caption>NUTRITION (per serving)</caption>
                 <thead>
@@ -62,19 +62,19 @@
                 {% for ing in post[2] %}
                     <tr>
                     <th scope="row">{{ ing }}</th>
-                        <td>{{ post[3][loop.index0][0] }}</td>
-                        <td>{{ post[3][loop.index0][1] }}</td>
-                        <td>{{ post[3][loop.index0][2] }}</td>
-                        <td>{{ post[3][loop.index0][3] }}</td>
+                    <td>{{ post[3][loop.index0][0] }}</td>
+                    <td>{{ post[3][loop.index0][1] }}</td>
+                    <td>{{ post[3][loop.index0][2] }}</td>
+                    <td>{{ post[3][loop.index0][3] }}</td>
 
                 {% endfor %}
                 </tr>
                 <tr>
-                <th scope="row" bgcolor="#fffafa">TOTAL</th>
-                    <td bgcolor=#fffafa">{{post[3][loop.index0][0]}}</td>
-                    <td bgcolor=#fffafa">{{post[3][loop.index0][1]}}</td>
-                    <td bgcolor=#fffafa">{{post[3][loop.index0][2]}}</td>
-                    <td bgcolor=#fffafa">{{post[3][loop.index0][3]}}</td>
+                    <th scope="row" bgcolor="#fffafa">TOTAL</th>
+                    <td bgcolor=#fffafa"><strong>{{ post[4][0] }}</strong></td>
+                    <td bgcolor=#fffafa"><strong>{{ post[4][1] }}</strong></td>
+                    <td bgcolor=#fffafa"><strong>{{ post[4][2] }}</strong></td>
+                    <td bgcolor=#fffafa"><strong>{{ post[4][3] }}</strong></td>
                 </tr>
 
                 </tbody>
