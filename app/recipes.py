@@ -45,6 +45,39 @@ def render_recipe(recipe_id):
 
     pass
 
+def convert(unit, size):
+    size = float(size)
+    if unit == 'g' or unit == 'ml':
+        return unit
+
+    weights = {'kg', 'oz', 'lb'}
+    volumes = {'cup', 'l', 'gal', 'T', 't'}
+
+    if unit in weights:
+        if unit == 'kg':
+            res = size * 1000
+        elif unit == 'oz':
+            res = size * 28.35
+        elif unit == 'lb':
+            res = size * 454
+
+    elif unit in volumes:
+        if unit == 'cup':
+            res = size * 236.58
+        elif unit == 'l':
+            res = size * 1000
+        elif unit == 'gal':
+            res = size * 3785.41
+        elif unit == 'T':
+            res = size * 15
+        elif unit == 't':
+            res = size * 5
+
+    else:
+        res = 0
+
+    return res
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -59,7 +92,7 @@ def index():
     for i in range(len(posts)):
         recipeID = posts[i]['id']
         servings = posts[i]['servings']
-        temp = [posts[i]] #will contain recipe then ingredients
+        temp = [posts[i]] #FORMAT [0:recipeSQL, 1:[ingSQL], 2:[ing names], 3:[ing caloric values], 4:[totals]
         temp.append(db.execute(
             'SELECT ingredientID, quantity, units'
             ' FROM recipeIngredientRelationship'
@@ -79,29 +112,32 @@ def index():
                 ing_names.append(ing_name)
 
                 nutrition = db.execute(
-                    'SELECT carbs, fat, protein, calories FROM ingredient WHERE id=?',
+                    'SELECT carbs, fat, protein, calories, portion_size, '
+                    'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
                     (ing_id)).fetchone()
 
-                if not servings: #prevents division by 0 in case servings was no added correctly
+                if not servings: #prevents division by 0 in case servings was not added correctly
                     servings = 1
 
+                quantity_g_ml = convert(ing['units'], ing['quantity'])
+                ratio = nutrition['portion_converted'] / quantity_g_ml
+
                 nutritions.append([
-                    round(nutrition['carbs']/servings, 1),
-                    round(nutrition['fat']/servings, 1),
-                    round(nutrition['protein']/servings, 1),
-                    round(nutrition['calories']/servings, 1)
+                    round(nutrition['carbs']/servings/ratio, 1),
+                    round(nutrition['fat']/servings/ratio, 1),
+                    round(nutrition['protein']/servings/ratio, 1),
+                    round(nutrition['calories']/servings/ratio, 1)
                     ]
                 )
 
-                nutrition_totals[0] += nutrition['carbs']
-                nutrition_totals[1] += nutrition['fat']
-                nutrition_totals[2] += nutrition['protein']
-                nutrition_totals[3] += nutrition['calories']
+                nutrition_totals[0] += round((nutrition['carbs']/ratio), 1)
+                nutrition_totals[1] += round((nutrition['fat']/ratio), 1)
+                nutrition_totals[2] += round((nutrition['protein']/ratio), 1)
+                nutrition_totals[3] += round((nutrition['calories']/ratio), 1)
 
         temp.append(ing_names)
         temp.append(nutritions)
         temp.append(nutrition_totals)
-        print(temp)
 
         res.append(temp)
 
