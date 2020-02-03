@@ -44,7 +44,7 @@ CREATE TABLE ingredient (
   protein FLOAT(1) NOT NULL,
   fat FLOAT(1) NOT NULL,
   carbs FLOAT(1) NOT NULL,
-  cals INT NOT NULL,
+  calories INT NOT NULL,
   notes TEXT
 );
 

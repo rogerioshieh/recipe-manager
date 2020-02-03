@@ -1,58 +1,66 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Edit "{{ ingredient['name'] }}"{% endblock %}</h1>
+    <h1>{% block title %}Edit "{{ ingredient['name'] }}"{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-<form method="post">
-    <label for="name">TITLE</label>
-    <input name="name" id="name" value="{{ ingredient['name'] }}" required>
+    <form method="post">
+        <label for="name">TITLE</label>
+        <input name="name" id="name" value="{{ ingredient['name'] }}" required>
 
-    <h4>CALORIC BREAKDOWN</h4>
-    Portion Size
-    <div>
-    <input name="portion_size" type="number" min=".01" step=".01" id="portion_size" value="{{ ingredient['portion_size'] }}" required>
-      <select name="portion_size_unit" id="portion_size_unit" value="{{ ingredient['portion_size_unit'] }}" required>
-        <option value="g">gram(s)</option>
-        <option value="kg">kg(s)</option>
-        <option value="oz">ounce(s)</option>
-        <option value="lb">lb(s)</option>
-        <option value="cup">cup(s)</option>
-        <option value="ml">mililiter(s)</option>
-        <option value="l">liter(s)</option>
-        <option value="gal">gallon(s)</option>
-        <option value="T">Tablespoon(s)</option>
-        <option value="t">teaspoon(s)</option>
-        <option value="in">inch(es)</option>
-        <option value="unit">unit(s)</option>   
-      </select>
-    </div>
-    
-    Protein content
-    <div>
-    <input name="protein" type="number" id="protein" value="{{ ingredient['protein'] }}" required> grams
-    </div>
+        <h4>CALORIC BREAKDOWN</h4>
+        Portion Size
+        <div>
+            <input name="portion_size" type="number" min=".01" step=".01" id="portion_size"
+                   value="{{ ingredient['portion_size'] }}" required>
+            <select name="portion_size_unit" id="portion_size_unit" value="{{ ingredient['portion_size_unit'] }}"
+                    required>
+                <option value="g">gram(s)</option>
+                <option value="kg">kg(s)</option>
+                <option value="oz">ounce(s)</option>
+                <option value="lb">lb(s)</option>
+                <option value="cup">cup(s)</option>
+                <option value="ml">mililiter(s)</option>
+                <option value="l">liter(s)</option>
+                <option value="gal">gallon(s)</option>
+                <option value="T">Tablespoon(s)</option>
+                <option value="t">teaspoon(s)</option>
+                <option value="in">inch(es)</option>
+                <option value="unit">unit(s)</option>
+            </select>
+        </div>
 
-    Fat content
-    <div>
-    <input name="fat" type="number" id="fat" value="{{ ingredient['fat'] }}" required> grams
-    </div>
+        Protein content
+        <div>
+            <input name="protein" type="number" step=".1" id="protein" value="{{ ingredient['protein'] }}" required>
+            grams
+        </div>
 
-  Carbs content
-    <div>
-    <input name="carbs" type="number" id="carbs" value="{{ ingredient['carbs'] }}" required> grams
-    </div>
+        Fat content
+        <div>
+            <input name="fat" type="number" step=".1" id="fat" value="{{ ingredient['fat'] }}" required> grams
+        </div>
 
-    <label for="notes">NOTES</label>
+        Carbs content
+        <div>
+            <input name="carbs" type="number" step=".1" id="carbs" value="{{ ingredient['carbs'] }}" required> grams
+        </div>
 
-    <textarea class="notes" name="notes" id="notes">{{ ingredient['notes'] }}</textarea>
+        Total Calories
+        <div>
+            <input name="calories" type="number" id="calories" value="{{ ingredient['calories'] }}"required> calories
+        </div>
 
-    <input type="submit" value="Save">
-  </form>
-  <hr>
+        <label for="notes">NOTES</label>
+
+        <textarea class="notes" name="notes" id="notes">{{ ingredient['notes'] }}</textarea>
+
+        <input type="submit" value="Save">
+    </form>
+    <hr>
     <form action="{{ url_for('ingredients.delete', name_key=ingredient['name_key']) }}" method="post">
-    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
-  </form>
+        <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+    </form>
 
 {% endblock %}

@@ -27,7 +27,7 @@ bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 def index():
     db = get_db()
     posts = db.execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs'
+        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories'
         ' FROM ingredient'
         ' ORDER BY name ASC'
     ).fetchall()
@@ -45,6 +45,7 @@ def create():
         protein = request.form['protein']
         fat = request.form['fat']
         carbs = request.form['carbs']
+        calories = request.form['calories']
         notes = request.form['notes']
         error = None
 
@@ -72,14 +73,17 @@ def create():
         if not carbs:
             error = 'Carbs content is required.'
 
+        if not calories:
+            error = 'Total calories are required.'
+
         if error is not None:
             flash(error)
 
         else:  
             db.execute(
-                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, notes)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, notes)
+                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
@@ -88,7 +92,7 @@ def create():
 
 def get_ing(name_key):
     ing = get_db().execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, notes'
+        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes'
         ' FROM ingredient'
         ' WHERE name_key = ?',
         (name_key,)
@@ -113,6 +117,7 @@ def update(name_key):
         protein = request.form['protein']
         fat = request.form['fat']
         carbs = request.form['carbs']
+        calories = request.form['calories']
         notes = request.form['notes']
         
         error = None
@@ -135,9 +140,10 @@ def update(name_key):
         else:
             db = get_db()
             db.execute(
-                'UPDATE ingredient SET name = ?, name_key = ?, portion_size = ?, portion_size_unit = ?, protein = ?, fat = ?, carbs = ?, notes = ?'
+                'UPDATE ingredient SET name = ?, name_key = ?, portion_size = ?, '
+                'portion_size_unit = ?, protein = ?, fat = ?, carbs = ?, calories = ?, notes = ?'
                 ' WHERE name_key = ?',
-                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, notes, name_key)
+                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes, name_key)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
