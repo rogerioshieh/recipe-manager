@@ -23,6 +23,7 @@ import re
 
 bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -31,17 +32,58 @@ def index():
         ' FROM ingredient'
         ' ORDER BY name ASC'
     ).fetchall()
-    #return jsonify(posts)
+    # return jsonify(posts)
     return render_template('ingredients/index.html', posts=posts)
 
+
+'''
+This function converts a given unit to either grams or ml.
+'''
+
+
+def convert(unit, size):
+    size = float(size)
+    if unit == 'g' or unit == 'ml':
+        return unit
+
+    weights = {'kg', 'oz', 'lb'}
+    volumes = {'cup', 'l', 'gal', 'T', 't'}
+
+    if unit in weights:
+        if unit == 'kg':
+            res = size * 1000
+        elif unit == 'oz':
+            res = size * 28.35
+        elif unit == 'lb':
+            res = size * 454
+
+    elif unit in volumes:
+        if unit == 'cup':
+            res = size * 236.58
+        elif unit == 'l':
+            res = size * 1000
+        elif unit == 'gal':
+            res = size * 3785.41
+        elif unit == 'T':
+            res = size * 15
+        elif unit == 't':
+            res = size * 5
+
+    else:
+        res = 0
+
+    return res
+
+
 @bp.route('/create', methods=('GET', 'POST'))
-#@login_required
+# @login_required
 def create():
     if request.method == 'POST':
         name = request.form['name']
         name_key = re.sub(r"\s+", "-", name).lower()
         portion_size = request.form['portion_size']
         portion_size_unit = request.form['portion_size_unit']
+        portion_converted = convert(portion_size_unit, portion_size)
         protein = request.form['protein']
         fat = request.form['fat']
         carbs = request.form['carbs']
@@ -51,9 +93,9 @@ def create():
 
         db = get_db()
 
-        #checks if ingredient is already in the database
+        # checks if ingredient is already in the database
         if len(db.execute('SELECT * FROM ingredient WHERE name_key = ?', (name_key,)).fetchall()) != 0:
-        	error = "Ingredient already in the database."
+            error = "Ingredient already in the database."
 
         if not name:
             error = 'Name is required.'
@@ -79,20 +121,21 @@ def create():
         if error is not None:
             flash(error)
 
-        else:  
+        else:
             db.execute(
-                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes)
+                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
 
     return render_template('ingredients/create.html')
 
+
 def get_ing(name_key):
     ing = get_db().execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes'
+        'SELECT name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes'
         ' FROM ingredient'
         ' WHERE name_key = ?',
         (name_key,)
@@ -103,23 +146,24 @@ def get_ing(name_key):
 
     return ing
 
+
 @bp.route('/<name_key>/update', methods=('GET', 'POST'))
 def update(name_key):
-
     ingredient = get_ing(name_key)
 
     if request.method == 'POST':
-        
+
         name = request.form['name']
         name_key = re.sub(r"\s+", "-", name).lower()
         portion_size = request.form['portion_size']
         portion_size_unit = request.form['portion_size_unit']
+        portion_converted = convert(portion_size_unit, portion_size)
         protein = request.form['protein']
         fat = request.form['fat']
         carbs = request.form['carbs']
         calories = request.form['calories']
         notes = request.form['notes']
-        
+
         error = None
 
         if not name:
@@ -141,14 +185,15 @@ def update(name_key):
             db = get_db()
             db.execute(
                 'UPDATE ingredient SET name = ?, name_key = ?, portion_size = ?, '
-                'portion_size_unit = ?, protein = ?, fat = ?, carbs = ?, calories = ?, notes = ?'
+                'portion_size_unit = ?, portion_converted = ?, protein = ?, fat = ?, carbs = ?, calories = ?, notes = ?'
                 ' WHERE name_key = ?',
-                (name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories, notes, name_key)
+                (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes, name_key)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
 
     return render_template('ingredients/update.html', ingredient=ingredient)
+
 
 @bp.route('/<name_key>/delete', methods=('POST',))
 def delete(name_key):
@@ -157,4 +202,3 @@ def delete(name_key):
     db.execute('DELETE FROM ingredient WHERE name_key = ?', (name_key,))
     db.commit()
     return redirect(url_for('ingredients.index'))
-

@@ -41,6 +41,7 @@ CREATE TABLE ingredient (
   name_key TEXT NOT NULL UNIQUE, --no whitespace, lowercase
   portion_size FLOAT(2) NOT NULL,
   portion_size_unit TEXT CHECK ( portion_size_unit in ('g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit') ) NOT NULL,
+  portion_converted FLOAT(2) NOT NULL, --will be only in grams or in mls
   protein FLOAT(1) NOT NULL,
   fat FLOAT(1) NOT NULL,
   carbs FLOAT(1) NOT NULL,
