@@ -25,6 +25,8 @@ import re
 
 bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
+__units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
+
 def get_ingredients():
     res = []
     db = get_db()
@@ -213,7 +215,7 @@ def no_ing():
             #https://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
             return redirect(url_for('recipes.index'))
 
-    return render_template('recipes/create-ing.html', ingredients=get_ingredients())
+    return render_template('recipes/create-ing.html', ingredients=get_ingredients(), units=__units__)
 
 
 @bp.route('/create-ing', methods=('GET', 'POST'))

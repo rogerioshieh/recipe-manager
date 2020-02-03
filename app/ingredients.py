@@ -23,6 +23,7 @@ import re
 
 bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 
+__units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 
 @bp.route('/')
 def index():
@@ -39,8 +40,6 @@ def index():
 '''
 This function converts a given unit to either grams or ml.
 '''
-
-
 def convert(unit, size):
     size = float(size)
     if unit == 'g' or unit == 'ml':
@@ -130,7 +129,7 @@ def create():
             db.commit()
             return redirect(url_for('ingredients.index'))
 
-    return render_template('ingredients/create.html')
+    return render_template('ingredients/create.html', units=__units__)
 
 
 def get_ing(name_key):
