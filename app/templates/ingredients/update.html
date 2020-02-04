@@ -10,6 +10,7 @@
         <input name="name" id="name" value="{{ ingredient['name'] }}" required>
 
         <h4>CALORIC BREAKDOWN</h4>
+
         Portion Size
         <div>
             <input name="portion_size" type="number" min=".01" step=".01" id="portion_size"
@@ -49,15 +50,15 @@
 
         Total Calories
         <div>
-            <input name="calories" type="number" id="calories" value="{{ ingredient['calories'] }}"required> calories
+            <input name="calories" type="number" id="calories" value="{{ ingredient['calories'] }}" required> calories
         </div>
 
         <label for="notes">NOTES</label>
-
         <textarea class="notes" name="notes" id="notes">{{ ingredient['notes'] }}</textarea>
 
         <input type="submit" value="Save">
     </form>
+
     <hr>
     <form action="{{ url_for('ingredients.delete', name_key=ingredient['name_key']) }}" method="post">
         <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">

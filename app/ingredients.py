@@ -25,18 +25,6 @@ bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 
-@bp.route('/')
-def index():
-    db = get_db()
-    posts = db.execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories'
-        ' FROM ingredient'
-        ' ORDER BY name ASC'
-    ).fetchall()
-    # return jsonify(posts)
-    return render_template('ingredients/index.html', posts=posts)
-
-
 '''
 This function converts a given unit to either grams or ml.
 '''
@@ -72,6 +60,32 @@ def convert(unit, size):
         res = 0
 
     return res
+
+
+def get_ing(name_key):
+    ing = get_db().execute(
+        'SELECT name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes'
+        ' FROM ingredient'
+        ' WHERE name_key = ?',
+        (name_key,)
+    ).fetchone()
+
+    if ing is None:
+        abort(404, "{0} is not in the Ingredient table.".format(name))
+
+    return ing
+
+
+@bp.route('/')
+def index():
+    db = get_db()
+    posts = db.execute(
+        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories'
+        ' FROM ingredient'
+        ' ORDER BY name ASC'
+    ).fetchall()
+    # return jsonify(posts)
+    return render_template('ingredients/index.html', posts=posts)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -130,20 +144,6 @@ def create():
             return redirect(url_for('ingredients.index'))
 
     return render_template('ingredients/create.html', units=__units__)
-
-
-def get_ing(name_key):
-    ing = get_db().execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes'
-        ' FROM ingredient'
-        ' WHERE name_key = ?',
-        (name_key,)
-    ).fetchone()
-
-    if ing is None:
-        abort(404, "{0} is not in the Ingredient table.".format(name))
-
-    return ing
 
 
 @bp.route('/<name_key>/update', methods=('GET', 'POST'))
