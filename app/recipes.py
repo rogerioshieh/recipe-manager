@@ -39,10 +39,6 @@ def get_ingredients():
         res.append(ing['name'])
     return sorted(res)
 
-def get_units():
-
-    return ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
-
 def render_recipe(recipe_id):
 
     pass
@@ -372,7 +368,7 @@ def update(name_key):
 
     return render_template('recipes/update.html', prepop=pre_pop, recipe=recipe,
                            quantities=[i for i in range(1, len(get_ingredients()) + 1)],
-                           ingredients=get_ingredients(), units=get_units())
+                           ingredients=get_ingredients(), units=__units__)
 
 @bp.route('/<name_key>/delete', methods=('GET', 'POST',))
 def delete(name_key):

@@ -1,34 +1,35 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Ingredients{% endblock %}</h1>
+    <h1>{% block title %}Ingredients{% endblock %}</h1>
 
     <a class="action" href="{{ url_for('ingredients.create') }}">Add ingredient</a>
 
 {% endblock %}
 
 {% block content %}
-  {% for ingredient in posts %}
-    <article class="ingredient">
-        <div style="width: 40%; float:left">
-          <h1>{{ ingredient['name'] }} ({{ ingredient['portion_size'] }} {{ ingredient['portion_size_unit'] }})</h1>
-        </div>
+    {% for ingredient in posts %}
+        <article class="ingredient">
+            <div style="width: 40%; float:left">
+                <h1>{{ ingredient['name'] }}
+                    ({{ ingredient['portion_size'] }} {{ ingredient['portion_size_unit'] }})</h1>
+            </div>
 
-        <div style="width: 40%; float:left">
-          <p><em>Protein</em>: {{ ingredient['protein'] }} g
-            <br><em>Fat</em>: {{ ingredient['fat'] }} g
-            <br> <em>Carbs</em>: {{ ingredient['carbs'] }} g
-            </p>
-        </div>
+            <div style="width: 40%; float:left">
+                <p><em>Protein</em>: {{ ingredient['protein'] }} g
+                    <br><em>Fat</em>: {{ ingredient['fat'] }} g
+                    <br> <em>Carbs</em>: {{ ingredient['carbs'] }} g
+                </p>
+            </div>
 
-        <div style="width: 20%">
-        <a class="action" href="{{ url_for('ingredients.update', name_key=ingredient['name_key']) }}">Edit
-          </a>
-        </div>
+            <div style="width: 20%">
+                <a class="action" href="{{ url_for('ingredients.update', name_key=ingredient['name_key']) }}">Edit
+                </a>
+            </div>
 
-    </article>
-    {% if not loop.last %}
-      <hr>
-    {% endif %}
-  {% endfor %}
+        </article>
+        {% if not loop.last %}
+            <hr>
+        {% endif %}
+    {% endfor %}
 {% endblock %}

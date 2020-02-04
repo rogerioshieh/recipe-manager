@@ -58,6 +58,7 @@
                     <th scope="col">Calories</th>
                 </tr>
                 </thead>
+
                 <tbody>
                 {% for ing in post[2] %}
                     <tr>
@@ -66,9 +67,9 @@
                     <td>{{ post[3][loop.index0][1] }}</td>
                     <td>{{ post[3][loop.index0][2] }}</td>
                     <td>{{ post[3][loop.index0][3] }}</td>
-
                 {% endfor %}
                 </tr>
+                <tr>
                 <tr>
                     <th scope="row" bgcolor="#fffafa">TOTAL</th>
                     <td bgcolor=#fffafa"><strong>{{ post[4][0] }}</strong></td>
@@ -76,11 +77,8 @@
                     <td bgcolor=#fffafa"><strong>{{ post[4][2] }}</strong></td>
                     <td bgcolor=#fffafa"><strong>{{ post[4][3] }}</strong></td>
                 </tr>
-
                 </tbody>
-
             </table>
-
 
             <h4>Steps:</h4>
             <p class="body">{{ post[0]['body'] }}</p>

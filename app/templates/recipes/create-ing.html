@@ -18,12 +18,13 @@
 
         <div id="1" class="ingredient">
 
-            Ingredient: <select class="ing"
-                                style="width:200px;">
-            {% for ing in ingredients %}
-                <option>{{ ing }}</option>
-            {% endfor %}
-        </select>
+            Ingredient:
+            <select class="ing" style="width:200px;">
+                {% for ing in ingredients %}
+                    <option>{{ ing }}</option>
+                {% endfor %}
+            </select>
+
             Quantity:
             <input class="quantity" type="number" min=".01" step=".01"
                    value="{{ request.form['title'] }}" required>
