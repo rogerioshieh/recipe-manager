@@ -9,9 +9,7 @@ Views:
 - Delete (does not have a template)
 
 TODO:
-- modify create and update methods so that the POST inserts into recipeMealRelationship
 - add search bar to ingredient drop down
-- add add/remove links to control number of ingredients
 """
 
 from flask import (
@@ -153,7 +151,7 @@ def index():
                     servings = 1
 
                 quantity_g_ml = convert(ing['units'], ing['quantity'])
-                ratio = nutrition['portion_converted'] / quantity_g_ml
+                ratio = float(nutrition['portion_converted']) / quantity_g_ml
 
                 nutritions.append([
                     round(nutrition['carbs']/servings/ratio, 1),
@@ -230,41 +228,6 @@ def create():
 
     return render_template('recipes/create.html', ingredients=get_ingredients(), units=__units__)
 
-'''
-@bp.route('/create-ing', methods=('GET', 'POST'))
-@login_required
-def create():
-    if request.method == 'POST':
-
-        title = request.form['title']
-        body = request.form['body']
-        servings = request.form['servings']
-
-        error = None
-
-        db = get_db()
-
-        if not title:
-            error = 'Title is required.'
-
-        if not body:
-            error = "Instructions are required."
-
-        if error is not None:
-            flash(error)
-
-        else:
-            db.execute(
-                'INSERT INTO recipe (author_id, title, body, servings)'
-                ' VALUES (?, ?, ?)',
-                (g.user['id'], title, body, servings)
-            )
-            db.commit()
-            return redirect(url_for('ingredients.index'))
-
-    return render_template('recipes/create.html', ingredients=get_ingredients())
-'''
-
 
 @bp.route('/<name_key>/update', methods=('GET', 'POST'))
 def update(name_key):
@@ -295,26 +258,10 @@ def update(name_key):
                 (data['title'],)
             ).fetchone()
 
-            db.execute(
-                'DELETE FROM recipe where id=?',
-                (recipeID['id'],)
-            )
+            db.execute('DELETE FROM recipe where id=?', (recipeID['id'],))
 
-            db.execute(
-                'delete from sqlite_sequence where name=?',
-                ("recipe",)
-            )
-
-            db.execute(
-                'DELETE FROM recipeIngredientRelationship '
-                'where recipeID=?',
-                (recipeID['id'],)
-            )
-
-            db.execute(
-                'delete from sqlite_sequence where name=?',
-                ("recipeIngredientRelationship",)
-            )
+            db.execute('DELETE FROM recipeIngredientRelationship where recipeID=?',
+                (recipeID['id'],))
 
             db.execute(
                 'INSERT INTO recipe (author_id, title, body, servings)'
