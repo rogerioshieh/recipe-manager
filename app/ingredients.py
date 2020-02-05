@@ -31,7 +31,7 @@ This function converts a given unit to either grams or ml.
 def convert(unit, size):
     size = float(size)
     if unit == 'g' or unit == 'ml':
-        return unit
+        return size
 
     weights = {'kg', 'oz', 'lb'}
     volumes = {'cup', 'l', 'gal', 'T', 't'}
@@ -64,7 +64,7 @@ def convert(unit, size):
 
 def get_ing(name_key):
     ing = get_db().execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes'
+        'SELECT id, name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes'
         ' FROM ingredient'
         ' WHERE name_key = ?',
         (name_key,)
@@ -196,8 +196,17 @@ def update(name_key):
 
 @bp.route('/<name_key>/delete', methods=('POST',))
 def delete(name_key):
-    get_ing(name_key)
+    ing = get_ing(name_key)
     db = get_db()
     db.execute('DELETE FROM ingredient WHERE name_key = ?', (name_key,))
+
+    recipes = db.execute(
+        'SELECT recipeID FROM recipeIngredientRelationship WHERE ingredientID = ?', (ing['id'],)
+    ).fetchall()
+
+    for recipe in recipes:
+        db.execute('DELETE FROM recipe WHERE id = ?', (recipe['recipeID'],))
+        db.execute('DELETE FROM recipeIngredientRelationship WHERE recipeID = ?', (recipe['recipeID'],))
+
     db.commit()
     return redirect(url_for('ingredients.index'))

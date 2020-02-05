@@ -61,7 +61,8 @@
 
     <hr>
     <form action="{{ url_for('ingredients.delete', name_key=ingredient['name_key']) }}" method="post">
-        <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+        <input class="danger" type="submit" value="Delete" onclick="return confirm('ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED. \n \n Are you sure?');">
+        <em>NOTE: ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED.</em>
     </form>
 
 {% endblock %}
