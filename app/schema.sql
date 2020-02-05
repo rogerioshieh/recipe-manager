@@ -15,7 +15,7 @@ CREATE TABLE user (
 
 --
 CREATE TABLE meal (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   author_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE meal (
 );
 
 CREATE TABLE recipe (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   author_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -36,7 +36,7 @@ Primary key is name_key (text entry, whitespaces substituted by dash) because th
 only a few hundred ingredients max, which is reasonable.
 */
 CREATE TABLE ingredient (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   name_key TEXT NOT NULL UNIQUE, --no whitespace, lowercase
   portion_size FLOAT(2) NOT NULL,
