@@ -328,6 +328,8 @@ def update(name_key):
                     (re.sub(r"\s+", "-", ing['ingName']).lower(),)
                 ).fetchone()
 
+                print(ingID['id'])
+
                 db.execute(
                     'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
                     ' VALUES (?, ?, ?, ?)',
@@ -382,9 +384,10 @@ def update(name_key):
 
 @bp.route('/<name_key>/delete', methods=('GET', 'POST',))
 def delete(name_key):
-    get_recipe(name_key)
+
     db = get_db()
     db.execute('DELETE FROM recipe WHERE id = ?', (name_key,))
+    db.execute('DELETE FROM recipeIngredientRelationship WHERE recipeID = ?', (name_key,))
     db.commit()
     return redirect(url_for('recipes.index'))
 

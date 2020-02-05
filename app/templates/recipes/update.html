@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post">
+    <div>
 
         <label for="title">Title</label>
         <input name="title" id="title" value="{{ recipe['title'] }}" required>
@@ -16,12 +16,12 @@
             }
         </style>
 
-        <div id="ing">
+        <div id="ings">
             {% for q in quantities %}
 
                 <div id="ing{{ q }}" class="ingredient">
                     Ingredient #{{ q }}:
-                    <select class="ing" style="width:200px;" id="ing{{ q }}">
+                    <select class="ing" style="width:200px;" >
                         {% for ing in ingredients %}
                             {% if prepop['ings'][q-1] == ing %}
                                 <option selected="selected">{{ ing }}</option>
@@ -32,12 +32,11 @@
                     </select>
 
                     Quantity:
-                    <input id="quantity{{ q }}" value={{ prepop["quantity"][q-1] }} type="number"
-                           min=".01" step=".01" value="{{ request.form['title'] }}" required>
+                    <input class="quantity" value={{ prepop["quantity"][q-1] }} type="number"
+                           min=".01" step=".01" required>
 
                     Units:
-                    <select name="portion_size_unit{{ q }}" id="portion_size_unit{{ q }}"
-                            value="{{ request.form['portion_size_unit'] }}" required>
+                    <select class="portion_size_unit" value="{{ request.form['portion_size_unit'] }}" required>
 
                         {% for unit in units %}
                             {% if prepop['units'][q-1] == unit %}
@@ -95,7 +94,7 @@
         <br/>
         <input type="button" value="Sussssbmit" onclick="handleSubmit(event)">
         <input type="reset" name="reset1">
-    </form>
+    </div>
 
     <!-- Template for new ingredient-->
     <div id="newlinktpl" style="display:none">
@@ -148,7 +147,7 @@
         function delOriginal(eleId) {
             d = document;
             var ele = d.getElementById(eleId);
-            var parentEle = d.getElementById('ing');
+            var parentEle = d.getElementById('ings');
             parentEle.removeChild(ele);
         }
 
@@ -179,6 +178,8 @@
                 ing.portion = ingredient.querySelector(".portion_size_unit").value;
                 data.ingredients.push(ing);
             }
+
+            alert(data);
 
             fetch('/recipes/{{ pageId }}/update', {
                 method: 'POST',
