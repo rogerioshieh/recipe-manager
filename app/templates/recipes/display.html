@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}{{ recipe[0]['title'] }}{% endblock %}</h1>
+    <a class="action" href="{{ url_for('recipes.update', recipeID=recipe[0]['id']) }}">Edit</a>
+{% endblock %}
+
+{% block content %}
+    <article class="post">
+        <header>
+            <div class="about">by {{ recipe[0]['author_ID'] }}
+            </div>
+        </header>
+
+        <table>
+            <caption>INGREDIENTS</caption>
+            <tr>
+                {% for ing in recipe[2] %}
+
+                    <td style="background-color: lightgray">
+                        {{ ing }}
+                        {% if not loop.last %}
+                            <br>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for ing in recipe[1] %}
+                    <td>
+                        {{ ing['quantity'] }} {{ ing['units'] }}
+                        {% if not loop.last %}
+                            <br>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+
+            </tr>
+        </table>
+
+        <br>
+        <table class="table table-hover">
+            <caption>NUTRITION (per serving)</caption>
+            <thead>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">Carbs (g)</th>
+                <th scope="col">Fat (g)</th>
+                <th scope="col">Protein (g)</th>
+                <th scope="col">Calories</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for ing in recipe[2] %}
+                <tr>
+                <th scope="row">{{ ing }}</th>
+                <td>{{ recipe[3][loop.index0][0] }}</td>
+                <td>{{ recipe[3][loop.index0][1] }}</td>
+                <td>{{ recipe[3][loop.index0][2] }}</td>
+                <td>{{ recipe[3][loop.index0][3] }}</td>
+            {% endfor %}
+            </tr>
+            <tr>
+            <tr>
+                <th scope="row" bgcolor="#fffafa">TOTAL</th>
+                <td bgcolor=#fffafa"><strong>{{ recipe[4][0] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ recipe[4][1] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ recipe[4][2] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ recipe[4][3] }}</strong></td>
+            </tr>
+            </tbody>
+        </table>
+        <h4>Serves: {{ recipe[0]['servings'] }}</h4>
+        <h4>Steps:</h4>
+        <p class="body">{{ recipe[0]['body'] }}</p>
+    </article>
+
+    <form action="{{ url_for('recipes.delete', name_key=recipe[0]['id']) }}" method="post">
+        <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+    </form>
+{% endblock %}

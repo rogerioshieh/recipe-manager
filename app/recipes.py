@@ -25,17 +25,15 @@ bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 
+
 def get_ingredients():
+
     res = []
-    db = get_db()
-    ings = db.execute(
-        'SELECT *'
-        ' FROM ingredient'
-        ' ORDER BY name ASC'
-    ).fetchall()
-    for ing in ings:
+    for ing in get_db().execute('SELECT * FROM ingredient ORDER BY name ASC').fetchall():
         res.append(ing['name'])
+
     return sorted(res)
+
 
 def get_recipe(name_key):
     recipe = get_db().execute(
@@ -50,9 +48,6 @@ def get_recipe(name_key):
 
     return recipe
 
-def render_recipe(recipe_id):
-
-    pass
 
 def convert(unit, size):
     size = float(size)
@@ -88,98 +83,75 @@ def convert(unit, size):
     return res
 
 
-def parse_ing(request_form):
-    number_ingredients = int((len(request_form) - 2) / 3)
-    number_ingredients = 2
-    ingredients = []  # each entry: (ingredient, quantity, portion_size)
-    temp = []
-
-    for entry in request_form.keys():
-        if entry == 'title' or entry == 'body':
-            if len(temp) != 0 and len(temp) % number_ingredients == 0:
-                ingredients.append(tuple(temp))
-            continue
-
-        if len(temp) != 0 and len(temp) % number_ingredients == 0:
-            ingredients.append(tuple(temp))
-            temp = [request_form[entry]]
-        else:
-            temp.append(request_form[entry])
-
-    return ingredients
-
-
 @bp.route('/')
 def index():
     db = get_db()
-    posts = db.execute(
-        'SELECT *'
-        ' FROM recipe'
-    ).fetchall()
+    recipes_db = db.execute('SELECT title, id FROM recipe').fetchall()
+    recipes = []
 
-    res = []
-    nutritions = [] #per ing: [Carbs, Protein, Fat, Calories]
+    for i in range(len(recipes_db)):
+        recipes.append([recipes_db[i]['title'], recipes_db[i]['id']])
 
-    for i in range(len(posts)):
-        nutritions = []
-        recipeID = posts[i]['id']
-        servings = posts[i]['servings']
-        temp = [posts[i]] #FORMAT [0:recipeSQL, 1:[ingSQL], 2:[ing names], 3:[ing caloric values], 4:[totals]
-        temp.append(db.execute(
-            'SELECT ingredientID, quantity, units'
-            ' FROM recipeIngredientRelationship'
-            ' WHERE recipeID=(?)', (recipeID,)
-        ).fetchall())
+    return render_template('recipes/index.html', recipes=recipes)
 
-        ing_names = []
-        if temp[1]:
-            nutrition_totals = [0, 0, 0, 0] #carbs, protein, fat, calories
-            for ing in temp[1]:
 
-                ing_id = str(ing['ingredientID'])
+'''
+Displays a recipe given its index number.
+==> recipe = [recipeSQL, list(ingSQL), ing names: list(str), 
+macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
+'''
+@bp.route('/<recipeID>/')
+def display_recipe(recipeID):
+    db = get_db()
+    recipe = db.execute('SELECT * from RECIPE where id = ?', (recipeID)).fetchall()
 
-                ing_name = db.execute(
-                    'SELECT name FROM ingredient WHERE id=?',
-                    (ing_id)).fetchone()['name']
-                ing_names.append(ing_name)
+    if not recipe:
+        abort(404, f"{recipeID} is not in the Recipe table.")
 
-                nutrition = db.execute(
-                    'SELECT carbs, fat, protein, calories, portion_size, '
-                    'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
-                    (ing_id)).fetchone()
+    recipe.append(db.execute(
+        'SELECT ingredientID, quantity, units FROM recipeIngredientRelationship'
+        ' WHERE recipeID=(?)', (recipeID,)
+    ).fetchall())
 
-                if not servings: #prevents division by 0 in case servings was not added correctly
-                    servings = 1
+    # prevents division by 0 in case servings was not added correctly
+    servings = 1 if not recipe[0]['servings'] else recipe[0]['servings']
+    macro_recipe = []  # list(list(int)) containing macros of each ingredient
+    ing_names = []  # list(str) of ingredient names
+    macro_totals = [0, 0, 0, 0]  # carbs, protein, fat, calories
 
-                quantity_g_ml = convert(ing['units'], ing['quantity'])
-                ratio = nutrition['portion_converted'] / quantity_g_ml
+    if recipe[1]:
+        for ing in recipe[1]:
 
-                nutritions.append([
-                    round(nutrition['carbs']/servings/ratio, 1),
-                    round(nutrition['fat']/servings/ratio, 1),
-                    round(nutrition['protein']/servings/ratio, 1),
-                    round(nutrition['calories']/servings/ratio, 1)
-                    ]
-                )
+            ing_id = str(ing['ingredientID'])
+            ing_names.append(db.execute('SELECT name FROM ingredient WHERE id=?',
+                                  (ing_id)).fetchone()['name'])
 
-                nutrition_totals[0] += nutrition['carbs']/ratio
-                nutrition_totals[1] += nutrition['fat']/ratio
-                nutrition_totals[2] += nutrition['protein']/ratio
-                nutrition_totals[3] += nutrition['calories']/ratio
+            macro_db = db.execute(
+                'SELECT carbs, fat, protein, calories, portion_size, '
+                'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
+                (ing_id)).fetchone()
 
-        temp.append(ing_names)
-        temp.append(nutritions)
-        temp.append([round(x, 1) for x in nutrition_totals])
+            macro_ing = [macro_db['carbs'], macro_db['fat'],
+                         macro_db['protein'], macro_db['calories']]
 
-        res.append(temp)
+            quantity_g_ml = convert(ing['units'], ing['quantity'])
+            ratio = macro_db['portion_converted'] / quantity_g_ml
 
-    return render_template('recipes/index.html', posts=res, nutritions=nutritions)
+            # appends a list of ingredient macros
+            macro_recipe.append([round(x / servings / ratio, 1) for x in macro_ing])
+
+            macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macro_ing)]
+
+    recipe.append(ing_names)
+    recipe.append(macro_recipe)
+    recipe.append([round(x, 1) for x in macro_totals])
+
+    return render_template('recipes/display.html', recipe=recipe, nutritions=macro_recipe)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
-
     if request.method == 'POST':
 
         db = get_db()
@@ -224,20 +196,18 @@ def create():
                 )
 
             db.commit()
-            #https://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
+            # https://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
             return redirect(url_for('recipes.index'))
 
     return render_template('recipes/create.html', ingredients=get_ingredients(), units=__units__)
 
 
-@bp.route('/<name_key>/update', methods=('GET', 'POST'))
-def update(name_key):
-
+@bp.route('/<recipeID>/update', methods=('GET', 'POST'))
+def update(recipeID):
     if request.method == 'POST':
 
         db = get_db()
         data = request.get_json()
-        print(data)
 
         error = None
 
@@ -254,15 +224,11 @@ def update(name_key):
             flash(error)
 
         else:
-            recipeID = db.execute(
-                'SELECT id FROM recipe WHERE title=?',
-                (data['title'],)
-            ).fetchone()
 
-            db.execute('DELETE FROM recipe where id=?', (recipeID['id'],))
+            db.execute('DELETE FROM recipe where id=?', (recipeID,))
 
             db.execute('DELETE FROM recipeIngredientRelationship where recipeID=?',
-                (recipeID['id'],))
+                       (recipeID,))
 
             db.execute(
                 'INSERT INTO recipe (author_id, title, body, servings)'
@@ -276,27 +242,25 @@ def update(name_key):
                     (re.sub(r"\s+", "-", ing['ingName']).lower(),)
                 ).fetchone()
 
-                print(ingID['id'])
-
                 db.execute(
                     'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
                     ' VALUES (?, ?, ?, ?)',
-                    (recipeID['id'], ingID['id'], ing['quantity'], ing['portion'])
+                    (recipeID, ingID['id'], ing['quantity'], ing['portion'])
                 )
 
             db.commit()
             return redirect(url_for('recipes.index'))
 
     db = get_db()
-    recipe = get_recipe(name_key)
+    recipe = get_recipe(recipeID)
 
-    #pre-populated entries
+    # pre-populated entries
     r_quantities = []
     r_units = []
     ings = db.execute(
         'SELECT ingredientID from recipeIngredientRelationship'
         ' WHERE recipeID=?',
-        (recipe['id'],)
+        (recipeID,)
     ).fetchall()
     r_ings = []
 
@@ -312,7 +276,7 @@ def update(name_key):
             'SELECT quantity FROM recipeIngredientRelationship'
             ' WHERE recipeID = ? '
             'AND ingredientID = ?',
-            (name_key, ing['ingredientID'])
+            (recipeID, ing['ingredientID'])
         ).fetchone()
         r_quantities.append(quant['quantity'])
 
@@ -320,7 +284,7 @@ def update(name_key):
             'SELECT units FROM recipeIngredientRelationship'
             ' WHERE recipeID = ? '
             'AND ingredientID = ?',
-            (name_key, ing['ingredientID'])
+            (recipeID, ing['ingredientID'])
         ).fetchone()
         r_units.append(unit['units'])
 
@@ -328,14 +292,13 @@ def update(name_key):
 
     return render_template('recipes/update.html', prepop=pre_pop, recipe=recipe,
                            quantities=[i for i in range(1, len(r_ings) + 1)],
-                           ingredients=get_ingredients(), units=__units__, pageId=name_key)
+                           ingredients=get_ingredients(), units=__units__, pageId=recipeID)
+
 
 @bp.route('/<name_key>/delete', methods=('GET', 'POST',))
 def delete(name_key):
-
     db = get_db()
     db.execute('DELETE FROM recipe WHERE id = ?', (name_key,))
     db.execute('DELETE FROM recipeIngredientRelationship WHERE recipeID = ?', (name_key,))
     db.commit()
     return redirect(url_for('recipes.index'))
-
