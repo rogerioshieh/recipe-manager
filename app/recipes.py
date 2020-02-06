@@ -121,6 +121,7 @@ def index():
     nutritions = [] #per ing: [Carbs, Protein, Fat, Calories]
 
     for i in range(len(posts)):
+        nutritions = []
         recipeID = posts[i]['id']
         servings = posts[i]['servings']
         temp = [posts[i]] #FORMAT [0:recipeSQL, 1:[ingSQL], 2:[ing names], 3:[ing caloric values], 4:[totals]
@@ -151,7 +152,7 @@ def index():
                     servings = 1
 
                 quantity_g_ml = convert(ing['units'], ing['quantity'])
-                ratio = float(nutrition['portion_converted']) / quantity_g_ml
+                ratio = nutrition['portion_converted'] / quantity_g_ml
 
                 nutritions.append([
                     round(nutrition['carbs']/servings/ratio, 1),
@@ -161,14 +162,14 @@ def index():
                     ]
                 )
 
-                nutrition_totals[0] += round((nutrition['carbs']/ratio), 1)
-                nutrition_totals[1] += round((nutrition['fat']/ratio), 1)
-                nutrition_totals[2] += round((nutrition['protein']/ratio), 1)
-                nutrition_totals[3] += round((nutrition['calories']/ratio), 1)
+                nutrition_totals[0] += nutrition['carbs']/ratio
+                nutrition_totals[1] += nutrition['fat']/ratio
+                nutrition_totals[2] += nutrition['protein']/ratio
+                nutrition_totals[3] += nutrition['calories']/ratio
 
         temp.append(ing_names)
         temp.append(nutritions)
-        temp.append(nutrition_totals)
+        temp.append([round(x, 1) for x in nutrition_totals])
 
         res.append(temp)
 
