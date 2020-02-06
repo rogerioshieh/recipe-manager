@@ -21,7 +21,7 @@
 
                 <div id="ing{{ q }}" class="ingredient">
                     Ingredient #{{ q }}:
-                    <select class="ing" style="width:200px;" >
+                    <select class="ing" style="width:200px;">
                         {% for ing in ingredients %}
                             {% if prepop['ings'][q-1] == ing %}
                                 <option selected="selected">{{ ing }}</option>
@@ -92,7 +92,7 @@
         <label for="body">Instructions</label>
         <textarea name="instructions" id="instructions">{{ recipe['body'] }}</textarea>
         <br/>
-        <input type="button" value="Sussssbmit" onclick="handleSubmit(event)">
+        <input type="button" value="Submit" onclick="handleSubmit(event)">
         <input type="reset" name="reset1">
     </div>
 
@@ -179,8 +179,6 @@
                 data.ingredients.push(ing);
             }
 
-            alert(data);
-
             fetch('/recipes/{{ pageId }}/update', {
                 method: 'POST',
                 headers: {
@@ -188,8 +186,6 @@
                 },
                 body: JSON.stringify(data)
             });
-
-            alert(JSON.stringify(data));
 
         }
     </script>
