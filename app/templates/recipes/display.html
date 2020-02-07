@@ -12,6 +12,18 @@
             </div>
         </header>
 
+        <div><br/> <b>Tag:</b>
+            {% if recipe[0]['tag'] == "meal_prep" %} Meal Prep
+            {% elif recipe[0]['tag'] == "easy" %} Quick & Easy
+            {% elif recipe[0]['tag'] == "weekend" %} Weekend cooking
+            {% elif recipe[0]['tag'] == "brunch" %} Brunch
+            {% elif recipe[0]['tag'] == "dessert" %} Dessert
+            {% elif recipe[0]['tag'] == "condiment" %} Sauces & Condiments
+            {% elif recipe[0]['tag'] == "other" %} Other
+            {% endif %}
+        </div>
+        </br>
+
         <table>
             <caption>INGREDIENTS</caption>
             <tr>

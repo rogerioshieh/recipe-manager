@@ -24,6 +24,7 @@ import re
 bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
+__tags__ = ['meal_prep', 'easy', 'weekend', 'brunch', 'dessert', 'condiment', 'other']
 
 
 def get_ingredients():
@@ -86,11 +87,11 @@ def convert(unit, size):
 @bp.route('/')
 def index():
     db = get_db()
-    recipes_db = db.execute('SELECT title, id FROM recipe').fetchall()
+    recipes_db = db.execute('SELECT title, id, tag FROM recipe').fetchall()
     recipes = []
 
     for i in range(len(recipes_db)):
-        recipes.append([recipes_db[i]['title'], recipes_db[i]['id']])
+        recipes.append([recipes_db[i]['title'], recipes_db[i]['id'], recipes_db[i]['tag']])
 
     return render_template('recipes/index.html', recipes=recipes)
 
@@ -169,13 +170,15 @@ def create():
             error = "Instructions are required."
 
         if error is not None:
+            print(error)
             flash(error)
 
         else:
+            print(data)
             db.execute(
-                'INSERT INTO recipe (author_id, title, body, servings)'
-                ' VALUES (?, ?, ?, ?)',
-                (g.user['username'], data['title'], data['instructions'], data['servings'])
+                'INSERT INTO recipe (author_id, title, body, servings, tag)'
+                ' VALUES (?, ?, ?, ?, ?)',
+                (g.user['username'], data['title'], data['instructions'], data['servings'], data['tag'])
             )
 
             recipeID = db.execute(
@@ -199,7 +202,7 @@ def create():
             # https://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
             return redirect(url_for('recipes.index'))
 
-    return render_template('recipes/create.html', ingredients=get_ingredients(), units=__units__)
+    return render_template('recipes/create.html', ingredients=get_ingredients(), units=__units__, tags=__tags__)
 
 
 @bp.route('/<recipeID>/update', methods=('GET', 'POST'))
@@ -231,9 +234,9 @@ def update(recipeID):
                        (recipeID,))
 
             db.execute(
-                'INSERT INTO recipe (author_id, title, body, servings)'
-                ' VALUES (?, ?, ?, ?)',
-                (g.user['username'], data['title'], data['instructions'], data['servings'])
+                'INSERT INTO recipe (author_id, title, body, servings, tag)'
+                ' VALUES (?, ?, ?, ?, ?)',
+                (g.user['username'], data['title'], data['instructions'], data['servings'], data['tag'])
             )
 
             for ing in data['ingredients']:
@@ -292,7 +295,7 @@ def update(recipeID):
 
     return render_template('recipes/update.html', prepop=pre_pop, recipe=recipe,
                            quantities=[i for i in range(1, len(r_ings) + 1)],
-                           ingredients=get_ingredients(), units=__units__, pageId=recipeID)
+                           ingredients=get_ingredients(), units=__units__, tags=__tags__, pageId=recipeID)
 
 
 @bp.route('/<name_key>/delete', methods=('GET', 'POST',))
