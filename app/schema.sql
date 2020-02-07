@@ -6,14 +6,13 @@ DROP TABLE IF EXISTS mealRecipeRelationship;
 DROP TABLE IF EXISTS recipeIngredientRelationship;
 
 
---meals, recipes, and ingredients are unique to each user. 
+--meals and recipes are unique to each user. Ingredients will be prepopulated.
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL
 );
 
---
 CREATE TABLE meal (
   id INTEGER PRIMARY KEY,
   author_id INTEGER NOT NULL,
@@ -46,6 +45,11 @@ CREATE TABLE ingredient (
   fat FLOAT(1) NOT NULL,
   carbs FLOAT(1) NOT NULL,
   calories INT NOT NULL,
+  price INT, --this is in cents to avoid float representation issues
+  price_size FLOAT(2), --{{1.5}} in i.5lb bag for instance
+  price_size_unit TEXT CHECK ( portion_size_unit in ('g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit') ),
+  price_converted FLOAT(2), --price converted to g or ml
+  tag TEXT CHECK (tag in ('carbs', 'fats', 'proteins', 'vegetables', 'legumes', 'fruit', 'nuts', 'sauces', 'dairy', 'spices', 'others')),
   notes TEXT
 );
 

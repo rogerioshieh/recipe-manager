@@ -8,11 +8,12 @@
 {% endblock %}
 
 {% block content %}
-    {% for ingredient in posts %}
+    {% for ingredient in ingredients %}
         <article class="ingredient">
             <div style="width: 40%; float:left">
                 <h1>{{ ingredient['name'] }}
                     ({{ ingredient['portion_size'] }} {{ ingredient['portion_size_unit'] }})</h1>
+                ${{ ingredient['price']/100 }} per {{ ingredient['price_size']|int }}{{ ingredient['price_size_unit'] }}
             </div>
 
             <div style="width: 40%; float:left">

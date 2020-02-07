@@ -17,18 +17,42 @@
                    value="{{ ingredient['portion_size'] }}" required>
             <select name="portion_size_unit" id="portion_size_unit" value="{{ ingredient['portion_size_unit'] }}"
                     required>
-                <option value="g">gram(s)</option>
-                <option value="kg">kg(s)</option>
-                <option value="oz">ounce(s)</option>
-                <option value="lb">lb(s)</option>
-                <option value="cup">cup(s)</option>
-                <option value="ml">mililiter(s)</option>
-                <option value="l">liter(s)</option>
-                <option value="gal">gallon(s)</option>
-                <option value="T">Tablespoon(s)</option>
-                <option value="t">teaspoon(s)</option>
-                <option value="in">inch(es)</option>
-                <option value="unit">unit(s)</option>
+
+                {% for unit in units %}
+                    {% if ingredient['portion_size_unit'] == unit %}
+                        <option value={{ unit }} selected="selected">
+                            {% if unit == "g" %} Gram(s)
+                            {% elif unit == "kg" %} Kilogram(s)
+                            {% elif unit == "oz" %} Ounce(s)
+                            {% elif unit == "cup" %} Cup(s)
+                            {% elif unit == "ml" %} Milliliter(s)
+                            {% elif unit == "l" %} Liter(s)
+                            {% elif unit == "gal" %} Gallon(s)
+                            {% elif unit == "in" %} Inch(es)
+                            {% elif unit == "T" %} Tablespoon(s)
+                            {% elif unit == "t" %} Teaspoons(s)
+                            {% elif unit == "unit" %} Unit(s)
+                            {% else %} {{ unit }}(s)
+                            {% endif %}
+                        </option>
+                    {% else %}
+                        <option value={{ unit }}>
+                            {% if unit == "g" %} Gram(s)
+                            {% elif unit == "kg" %} Kilogram(s)
+                            {% elif unit == "oz" %} Ounce(s)
+                            {% elif unit == "cup" %} Cup(s)
+                            {% elif unit == "ml" %} Milliliter(s)
+                            {% elif unit == "l" %} Liter(s)
+                            {% elif unit == "gal" %} Gallon(s)
+                            {% elif unit == "in" %} Inch(es)
+                            {% elif unit == "T" %} Tablespoon(s)
+                            {% elif unit == "t" %} Teaspoons(s)
+                            {% elif unit == "unit" %} Unit(s)
+                            {% else %} {{ unit }}(s)
+                            {% endif %}
+                        </option>
+                    {% endif %}
+                {% endfor %}
             </select>
         </div>
 
@@ -53,6 +77,90 @@
             <input name="calories" type="number" id="calories" value="{{ ingredient['calories'] }}" required> calories
         </div>
 
+        <div>
+            <b>Price (required) </b>:
+            $<input style="width: 10%" min=0 name="price" type="number" step=".01" id="price"
+                    value="{{ ingredient['price']/100 }}">
+            per<input style="width: 10%" min=0 name="price_size" type="number" id="price_size"
+                      value="{{ ingredient['price_size'] }}">
+            <select name="price_size_unit" id="price_size_unit" required>
+                {% for unit in units %}
+                    {% if ingredient['price_size_unit'] == unit %}
+                        <option value={{ unit }} selected="selected">
+                            {% if unit == "g" %} Gram(s)
+                            {% elif unit == "kg" %} Kilogram(s)
+                            {% elif unit == "oz" %} Ounce(s)
+                            {% elif unit == "cup" %} Cup(s)
+                            {% elif unit == "ml" %} Milliliter(s)
+                            {% elif unit == "l" %} Liter(s)
+                            {% elif unit == "gal" %} Gallon(s)
+                            {% elif unit == "in" %} Inch(es)
+                            {% elif unit == "T" %} Tablespoon(s)
+                            {% elif unit == "t" %} Teaspoons(s)
+                            {% elif unit == "unit" %} Unit(s)
+                            {% else %} {{ unit }}(s)
+                            {% endif %}
+                        </option>
+                    {% else %}
+                        <option value={{ unit }}>
+                            {% if unit == "g" %} Gram(s)
+                            {% elif unit == "kg" %} Kilogram(s)
+                            {% elif unit == "oz" %} Ounce(s)
+                            {% elif unit == "cup" %} Cup(s)
+                            {% elif unit == "ml" %} Milliliter(s)
+                            {% elif unit == "l" %} Liter(s)
+                            {% elif unit == "gal" %} Gallon(s)
+                            {% elif unit == "in" %} Inch(es)
+                            {% elif unit == "T" %} Tablespoon(s)
+                            {% elif unit == "t" %} Teaspoons(s)
+                            {% elif unit == "unit" %} Unit(s)
+                            {% else %} {{ unit }}(s)
+                            {% endif %}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <b>Tag:</b>
+            <select name="tag" id="tag" required>
+                {% for tag in tags %}
+                    {% if ingredient['tag'] == tag %}
+                        <option value={{ tag }} selected="selected">
+                            {% if tag == "carbs" %} Grains, Starches, & Sugars
+                            {% elif tag == "fats" %} Fats, Oils, & Spreads
+                            {% elif tag == "proteins" %} Proteins
+                            {% elif tag == "vegetables" %} Veggies
+                            {% elif tag == "legumes" %} Legumes
+                            {% elif tag == "fruit" %} Fruits
+                            {% elif tag == "nuts" %} Nuts & Seeds
+                            {% elif tag == "sauces" %} Sauces and Condiments
+                            {% elif tag == "dairy" %} Dairy
+                            {% elif tag == "spices" %} Spices
+                            {% else %} Others
+                            {% endif %}
+                        </option>
+                    {% else %}
+                        <option value={{ tag }}>
+                        {% if tag == "carbs" %} Grains, Starches, & Sugars
+                        {% elif tag == "fats" %} Fats, Oils, & Spreads
+                        {% elif tag == "proteins" %} Proteins
+                        {% elif tag == "vegetables" %} Veggies
+                        {% elif tag == "legumes" %} Legumes
+                        {% elif tag == "fruit" %} Fruits
+                        {% elif tag == "nuts" %} Nuts & Seeds
+                        {% elif tag == "sauces" %} Sauces and Condiments
+                        {% elif tag == "dairy" %} Dairy
+                        {% elif tag == "spices" %} Spices
+                        {% elif tag == "others" %} Others
+                        {% endif %}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
         <label for="notes">NOTES</label>
         <textarea class="notes" name="notes" id="notes">{{ ingredient['notes'] }}</textarea>
 
@@ -61,7 +169,8 @@
 
     <hr>
     <form action="{{ url_for('ingredients.delete', name_key=ingredient['name_key']) }}" method="post">
-        <input class="danger" type="submit" value="Delete" onclick="return confirm('ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED. \n \n Are you sure?');">
+        <input class="danger" type="submit" value="Delete"
+               onclick="return confirm('ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED. \n \n Are you sure?');">
         <em>NOTE: ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED.</em>
     </form>
 
