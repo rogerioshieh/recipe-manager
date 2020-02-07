@@ -40,7 +40,7 @@
             <tr>
                 {% for ing in recipe[1] %}
                     <td>
-                        {{ ing['quantity'] }} {{ ing['units'] }}
+                        {{ ing['quantity'] }} {{ ing['units'] }} -- ${{ prices[loop.index0] }}
                         {% if not loop.last %}
                             <br>
                         {% endif %}

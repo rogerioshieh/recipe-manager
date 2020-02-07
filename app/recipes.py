@@ -115,39 +115,44 @@ def display_recipe(recipeID):
     ).fetchall())
 
     # prevents division by 0 in case servings was not added correctly
-    servings = 1 if not recipe[0]['servings'] else recipe[0]['servings']
-    macro_recipe = []  # list(list(int)) containing macros of each ingredient
+    servings = recipe[0]['servings'] if recipe[0]['servings'] else 1
+    macros_recipe = []  # list(list(int)) containing macros of each ingredient
     ing_names = []  # list(str) of ingredient names
     macro_totals = [0, 0, 0, 0]  # carbs, protein, fat, calories
+    prices = []
 
     if recipe[1]:
         for ing in recipe[1]:
 
             ing_id = str(ing['ingredientID'])
-            ing_names.append(db.execute('SELECT name FROM ingredient WHERE id=?',
-                                  (ing_id)).fetchone()['name'])
+            ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
+                                  (ing_id)).fetchone()
+            ing_names.append(ing_db['name'])
 
             macro_db = db.execute(
                 'SELECT carbs, fat, protein, calories, portion_size, '
                 'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
                 (ing_id)).fetchone()
 
-            macro_ing = [macro_db['carbs'], macro_db['fat'],
+            macros_ing = [macro_db['carbs'], macro_db['fat'],
                          macro_db['protein'], macro_db['calories']]
 
             quantity_g_ml = convert(ing['units'], ing['quantity'])
             ratio = macro_db['portion_converted'] / quantity_g_ml
 
             # appends a list of ingredient macros
-            macro_recipe.append([round(x / servings / ratio, 1) for x in macro_ing])
+            macros_recipe.append([round(x / servings / ratio, 1) for x in macros_ing])
 
-            macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macro_ing)]
+            macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
+
+            prices.append(((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
+                            ) * quantity_g_ml ) / (100 * servings))
 
     recipe.append(ing_names)
-    recipe.append(macro_recipe)
+    recipe.append(macros_recipe)
     recipe.append([round(x, 1) for x in macro_totals])
 
-    return render_template('recipes/display.html', recipe=recipe, nutritions=macro_recipe)
+    return render_template('recipes/display.html', recipe=recipe, nutritions=macros_recipe, prices=[round(x, 2) for x in prices])
 
 
 @bp.route('/create', methods=('GET', 'POST'))
