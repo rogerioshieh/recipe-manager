@@ -8,7 +8,6 @@ Views:
 - Delete (does not have a template)
 
 TODO:
-- Figure out how to not display decimals
 - Search bar?
 """
 
@@ -24,6 +23,7 @@ import re
 bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
+__tags__ = ['carbs', 'fats', 'proteins', 'vegetables', 'legumes', 'fruit', 'nuts', 'sauces', 'dairy', 'spices', 'others']
 
 '''
 This function converts a given unit to either grams or ml.
@@ -64,14 +64,12 @@ def convert(unit, size):
 
 def get_ing(name_key):
     ing = get_db().execute(
-        'SELECT id, name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes'
-        ' FROM ingredient'
-        ' WHERE name_key = ?',
+        'SELECT * FROM ingredient WHERE name_key = ?',
         (name_key,)
     ).fetchone()
 
     if ing is None:
-        abort(404, "{0} is not in the Ingredient table.".format(name))
+        abort(404, f"{name_key} is not in the Ingredient table.")
 
     return ing
 
@@ -79,13 +77,10 @@ def get_ing(name_key):
 @bp.route('/')
 def index():
     db = get_db()
-    posts = db.execute(
-        'SELECT name, name_key, portion_size, portion_size_unit, protein, fat, carbs, calories'
-        ' FROM ingredient'
-        ' ORDER BY name ASC'
+    ingredients = db.execute(
+        'SELECT * FROM ingredient ORDER BY name ASC'
     ).fetchall()
-    # return jsonify(posts)
-    return render_template('ingredients/index.html', posts=posts)
+    return render_template('ingredients/index.html', ingredients=ingredients)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -101,6 +96,10 @@ def create():
         fat = request.form['fat']
         carbs = request.form['carbs']
         calories = request.form['calories']
+        price = str(float(request.form['price']) * 100)
+        price_size = request.form['price_size']
+        price_size_unit = request.form['price_size_unit']
+        tag = request.form['tag']
         notes = request.form['notes']
         error = None
 
@@ -136,14 +135,14 @@ def create():
 
         else:
             db.execute(
-                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes)
+                'INSERT INTO ingredient (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, price, price_size, price_size_unit, tag, notes)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, price, price_size, price_size_unit, tag, notes)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
 
-    return render_template('ingredients/create.html', units=__units__)
+    return render_template('ingredients/create.html', units=__units__, tags=__tags__)
 
 
 @bp.route('/<name_key>/update', methods=('GET', 'POST'))
@@ -161,6 +160,10 @@ def update(name_key):
         fat = request.form['fat']
         carbs = request.form['carbs']
         calories = request.form['calories']
+        price = str(float(request.form['price']) * 100)
+        price_size = request.form['price_size']
+        price_size_unit = request.form['price_size_unit']
+        tag = request.form['tag']
         notes = request.form['notes']
 
         error = None
@@ -183,18 +186,19 @@ def update(name_key):
         else:
             db = get_db()
             db.execute(
-                'UPDATE ingredient SET name = ?, name_key = ?, portion_size = ?, '
-                'portion_size_unit = ?, portion_converted = ?, protein = ?, fat = ?, carbs = ?, calories = ?, notes = ?'
+                'UPDATE ingredient SET name = ?, name_key = ?, portion_size = ?, portion_size_unit = ?, portion_converted = ?, '
+                'protein = ?, fat = ?, carbs = ?, calories = ?, price = ?, price_size = ?, price_size_unit = ?, tag = ?, notes = ?'
                 ' WHERE name_key = ?',
-                (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat, carbs, calories, notes, name_key)
+                (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat,
+                 carbs, calories, price, price_size, price_size_unit, tag, notes, name_key)
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
 
-    return render_template('ingredients/update.html', ingredient=ingredient)
+    return render_template('ingredients/update.html', ingredient=ingredient, units=__units__, tags=__tags__)
 
 
-@bp.route('/<name_key>/delete', methods=('POST',))
+@bp.route('/<name_key>/delete', methods=('GET', 'POST',))
 def delete(name_key):
     ing = get_ing(name_key)
     db = get_db()

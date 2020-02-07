@@ -53,6 +53,53 @@
             <input name="calories" type="number" id="calories" required> calories
         </div>
 
+        <div>
+            <b>Price (required)</b>:
+            $<input style="width: 10%" min=0 name="price" type="number" step=".01" id="price" required>
+            per <input style="width: 10%" min=0 name="price_size" type="number" id="price_size" required>
+            <select name="price_size_unit" id="price_size_unit" required>
+                {% for unit in units %}
+                    <option value={{ unit }}>
+                        {% if unit == "g" %} Gram(s)
+                        {% elif unit == "kg" %} Kilogram(s)
+                        {% elif unit == "oz" %} Ounce(s)
+                        {% elif unit == "cup" %} Cup(s)
+                        {% elif unit == "ml" %} Milliliter(s)
+                        {% elif unit == "l" %} Liter(s)
+                        {% elif unit == "gal" %} Gallon(s)
+                        {% elif unit == "in" %} Inch(es)
+                        {% elif unit == "T" %} Tablespoon(s)
+                        {% elif unit == "t" %} Teaspoons(s)
+                        {% elif unit == "unit" %} Unit(s)
+                        {% else %} {{ unit }}(s)
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <b>Tag:</b>
+            <select name="tag" id="tag" required>
+                {% for tag in tags %}
+                    <option value={{ tag }}>
+                        {% if tag == "carbs" %} Grains, Starches, & Sugars
+                        {% elif tag == "fats" %} Fats, Oils, & Spreads
+                        {% elif tag == "proteins" %} Proteins
+                        {% elif tag == "vegetables" %} Veggies
+                        {% elif tag == "legumes" %} Legumes
+                        {% elif tag == "fruit" %} Fruits
+                        {% elif tag == "nuts" %} Nuts & Seeds
+                        {% elif tag == "sauces" %} Sauces and Condiments
+                        {% elif tag == "dairy" %} Dairy
+                        {% elif tag == "spices" %} Spices
+                        {% elif tag == "others" %} Others
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
         <label for="notes">NOTES</label>
         <textarea name="notes" id="notes"></textarea>
 
