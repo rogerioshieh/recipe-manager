@@ -1,36 +1,36 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    <h1>{% block title %}{{ recipe[0]['title'] }}{% endblock %}</h1>
-    <a class="action" href="{{ url_for('recipes.update', recipeID=recipe[0]['id']) }}">Edit</a>
+    <h1>{% block title %}{{ meal['title'] }}{% endblock %}</h1>
+    <a class="action" href="{{ url_for('meals.update', meal_id=meal['id']) }}">Edit</a>
 {% endblock %}
 
 {% block content %}
     <article class="post">
         <header>
-            <div class="about">by {{ recipe[0]['author_ID'] }}
+            <div class="about">by {{ meal['author_ID'] }}
             </div>
         </header>
 
+        <h4>Serves: {{ servings }}</h4>
+
         <div><br/> <b>Tag:</b>
-            {% if recipe[0]['tag'] == "meal_prep" %} Meal Prep
-            {% elif recipe[0]['tag'] == "easy" %} Quick & Easy
-            {% elif recipe[0]['tag'] == "weekend" %} Weekend cooking
-            {% elif recipe[0]['tag'] == "brunch" %} Brunch
-            {% elif recipe[0]['tag'] == "dessert" %} Dessert
-            {% elif recipe[0]['tag'] == "condiment" %} Sauces & Condiments
-            {% elif recipe[0]['tag'] == "other" %} Other
+            {% if meal['tag'] == "meal_prep" %} Meal Prep
+            {% elif meal['tag'] == "easy" %} Quick & Easy
+            {% elif meal['tag'] == "weekend" %} Weekend cooking
+            {% elif meal['tag'] == "brunch" %} Brunch
+            {% elif meal['tag'] == "other" %} Other
             {% endif %}
         </div>
         </br>
 
         <table>
-            <caption>INGREDIENTS</caption>
+            <caption>RECIPES</caption>
             <tr>
-                {% for ing in recipe[2] %}
+                {% for recipe in recipes %}
 
                     <td style="background-color: lightgray">
-                        {{ ing }}
+                        {{ recipe['title'] }}
                         {% if not loop.last %}
                             <br>
                         {% endif %}
@@ -38,9 +38,9 @@
                 {% endfor %}
             </tr>
             <tr>
-                {% for ing in recipe[1] %}
+                {% for recipe in recipes %}
                     <td>
-                        {{ ing['quantity'] }} {{ ing['units'] }} -- ${{ prices[loop.index0] }}
+                     ${{ prices[loop.index0] }}
                         {% if not loop.last %}
                             <br>
                         {% endif %}
@@ -64,31 +64,31 @@
             </thead>
 
             <tbody>
-            {% for ing in recipe[2] %}
+            {% for recipe in recipes %}
                 <tr>
-                <th scope="row">{{ ing }}</th>
-                <td>{{ recipe[3][loop.index0][0] }}</td>
-                <td>{{ recipe[3][loop.index0][1] }}</td>
-                <td>{{ recipe[3][loop.index0][2] }}</td>
-                <td>{{ recipe[3][loop.index0][3] }}</td>
+                <th scope="row">{{ recipe['title'] }}</th>
+                <td>{{ macros[loop.index0][0] }}</td>
+                <td>{{ macros[loop.index0][1] }}</td>
+                <td>{{ macros[loop.index0][2] }}</td>
+                <td>{{ macros[loop.index0][3] }}</td>
             {% endfor %}
             </tr>
             <tr>
             <tr>
                 <th scope="row" bgcolor="#fffafa">TOTAL</th>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][0] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][1] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][2] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][3] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ macro_totals[0] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ macro_totals[1] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ macro_totals[2] }}</strong></td>
+                <td bgcolor=#fffafa"><strong>{{ macro_totals[3] }}</strong></td>
             </tr>
             </tbody>
         </table>
-        <h4>Serves: {{ recipe[0]['servings'] }}</h4>
-        <h4>Steps:</h4>
-        <p class="body">{{ recipe[0]['body'] }}</p>
+
+        <h4>Notes:</h4>
+        <p class="body">{{ meal['notes'] }}</p>
     </article>
 
-    <form action="{{ url_for('recipes.delete', name_key=recipe[0]['id']) }}" method="post">
+    <form action="{{ url_for('meals.delete', name_key=meal['id']) }}" method="post">
         <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
     </form>
 {% endblock %}

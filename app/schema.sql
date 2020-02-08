@@ -28,7 +28,7 @@ CREATE TABLE recipe (
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   servings INTEGER NOT NULL,
-  tag TEXT CHECK (tag in ('meal_prep', 'easy', 'weekend', 'brunch', 'dessert', 'condiment', 'other')),
+  tag TEXT CHECK (tag in ('starches', 'proteins', 'beans', 'vegetables', 'dessert', 'sauces', 'spices', 'others')),
   FOREIGN KEY (author_id) REFERENCES user (id)
 );
 

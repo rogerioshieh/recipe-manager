@@ -41,7 +41,7 @@ def get_meal(meal_id):
         (int(meal_id),)
     ).fetchone()
 
-    return meal if meal is not None else abort(404, f"{meal_id} is not in the Ingredient table.")
+    return meal if meal is not None else abort(404, f"{meal_id} is not in the Meal table.")
 
 
 def convert(unit, size):
@@ -78,6 +78,52 @@ def convert(unit, size):
     return res
 
 
+def get_macros_price(recipe, desired_servings):
+    """
+    :param desired_servings:
+    :param recipe: SQL object
+    :returns: list(list(int), list(int)) of carbs, fat, protein, calories
+    """
+    db = get_db()
+    ings = db.execute(
+        'SELECT * from recipeIngredientRelationship WHERE recipeID=(?)',
+        (recipe['id'],)
+    ).fetchall()
+
+    servings = recipe['servings'] if recipe['servings'] else 1
+    macro_totals = [0, 0, 0, 0]  # carbs, protein, fat, calories
+    prices_total = 0
+    res = []
+
+    for ing in ings:
+        ing_id = str(ing['ingredientID'])
+        ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
+                              (ing_id)).fetchone()
+
+        macro_db = db.execute(
+            'SELECT carbs, fat, protein, calories, portion_size, '
+            'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
+            (ing_id)).fetchone()
+
+        macros_ing = [macro_db['carbs'], macro_db['fat'],
+                     macro_db['protein'], macro_db['calories']]
+
+        quantity_g_ml = convert(ing['units'], ing['quantity'])
+        ratio = macro_db['portion_converted'] / quantity_g_ml
+
+        #updates macro_totals with recipe macros
+        macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
+
+        prices_total += ((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
+                        ) * quantity_g_ml ) / (100 * servings)
+
+    res.append([round(x * servings / desired_servings, 1) for x in macro_totals])
+    res.append(round(prices_total * servings / desired_servings, 2))
+
+    print(res)
+    return res
+
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -92,70 +138,47 @@ def index():
 
 '''
 Displays a recipe given its index number.
-==> recipe = [recipeSQL, list(ingSQL), ing names: list(str), 
+==> recipe = [mealSQL, list(recipeSQL), ing names: list(str), 
 macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
 '''
 @bp.route('/<meal_id>/')
 def display_meal(meal_id):
     db = get_db()
-    meal = db.execute('SELECT * FROM meal WHERE id = ?', (meal_id,)).fetchall()
+    meal = db.execute('SELECT * FROM meal WHERE id = ?', (meal_id,)).fetchone()
 
     if not meal:
         abort(404, f"{meal_id} is not in the Recipe table.")
 
-    meal.append(db.execute(
-        'SELECT * FROM mealRecipeRelationship'
-        ' WHERE mealID=(?)', (meal_id,)
-    ).fetchall())
+    recipes = db.execute(
+        'SELECT * FROM mealRecipeRelationship WHERE mealID=(?)', (meal_id,)
+    ).fetchall()
 
-
-
-    if meal[1]:
-        for recipe in meal[1]:
-
-            recipe_id = str(recipe['recipeID'])
-            recipe_db = db.execute('SELECT * FROM recipe WHERE id=?',
-                                  (recipe_id)).fetchone()
+    recipes_db = []
 
     # prevents division by 0 in case servings was not added correctly
-    servings = recipe[0]['servings'] if recipe[0]['servings'] else 1
-    macros_recipe = []  # list(list(int)) containing macros of each ingredient
-    ing_names = []  # list(str) of ingredient names
+    servings = recipes[0]['servings'] if recipes[0]['servings'] else 1
+    macros_per_recipe = []  # list(list(int)) containing macros of each ingredient
     macro_totals = [0, 0, 0, 0]  # carbs, protein, fat, calories
     prices = []
 
-    if recipe[1]:
-        for ing in recipe[1]:
+    if recipes:
+        for recipe in recipes:
 
-            ing_id = str(ing['ingredientID'])
-            ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                                  (ing_id)).fetchone()
-            ing_names.append(ing_db['name'])
+            recipe_id = str(recipe['recipeID'])
+            print(recipe_id)
+            recipe_db = db.execute('SELECT * FROM recipe WHERE id=?',
+                                  (recipe_id)).fetchone()
+            recipes_db.append(recipe_db)
 
-            macro_db = db.execute(
-                'SELECT carbs, fat, protein, calories, portion_size, '
-                'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
-                (ing_id)).fetchone()
+            temp = get_macros_price(recipe_db, servings)
+            macros_per_recipe.append(temp[0])
+            prices.append(temp[1])
 
-            macros_ing = [macro_db['carbs'], macro_db['fat'],
-                         macro_db['protein'], macro_db['calories']]
+            macro_totals = [round(x + y, 1) for x, y in zip(macro_totals, temp[0])]
 
-            quantity_g_ml = convert(ing['units'], ing['quantity'])
-            ratio = macro_db['portion_converted'] / quantity_g_ml
-
-            # appends a list of ingredient macros
-            macros_recipe.append([round(x / servings / ratio, 1) for x in macros_ing])
-
-            macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
-
-            prices.append(((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
-                            ) * quantity_g_ml ) / (100 * servings))
-
-    recipe.append(ing_names)
-    recipe.append(macros_recipe)
-    recipe.append([round(x, 1) for x in macro_totals])
-
-    return render_template('meals/display.html', recipe=recipe, nutritions=macros_recipe, prices=[round(x, 2) for x in prices])
+    return render_template('meals/display.html', meal=meal, recipes=recipes_db,
+                           servings=servings, macro_totals=macro_totals,
+                           macros=macros_per_recipe, prices=[round(x, 2) for x in prices])
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -179,7 +202,7 @@ def create():
 
         else:
             db.execute(
-                'INSERT INTO meal (author_id, title, notes, tag)'
+                'INSERT OR REPLACE INTO meal (author_id, title, notes, tag)'
                 ' VALUES (?, ?, ?, ?)',
                 (g.user['username'], data['title'], data['notes'], data['tag'])
             )
@@ -195,7 +218,7 @@ def create():
                     (recipe['title'],)).fetchone()['id']
 
                 db.execute(
-                    'INSERT INTO mealRecipeRelationship (mealID, recipeID, servings)'
+                    'INSERT or REPLACE INTO mealRecipeRelationship (mealID, recipeID, servings)'
                     ' VALUES (?, ?, ?)',
                     (meal_id, recipe_id, data['servings'])
                 )
@@ -282,7 +305,7 @@ def update(meal_id):
 @bp.route('/<name_key>/delete', methods=('GET', 'POST',))
 def delete(name_key):
     db = get_db()
-    db.execute('DELETE FROM recipe WHERE id = ?', (name_key,))
-    db.execute('DELETE FROM recipeIngredientRelationship WHERE recipeID = ?', (name_key,))
+    db.execute('DELETE FROM meal WHERE id = ?', (name_key,))
+    db.execute('DELETE FROM mealRecipeRelationship WHERE recipeID = ?', (name_key,))
     db.commit()
-    return redirect(url_for('recipes.index'))
+    return redirect(url_for('meals.index'))

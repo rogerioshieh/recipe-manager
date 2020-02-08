@@ -24,7 +24,7 @@ import re
 bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
-__tags__ = ['meal_prep', 'easy', 'weekend', 'brunch', 'dessert', 'condiment', 'other']
+__tags__ = ['starches', 'proteins', 'beans', 'vegetables', 'dessert', 'sauces', 'spices', 'others']
 
 
 def get_ingredients():
@@ -181,7 +181,7 @@ def create():
         else:
             print(data)
             db.execute(
-                'INSERT INTO recipe (author_id, title, body, servings, tag)'
+                'INSERT OR REPLACE INTO recipe (author_id, title, body, servings, tag)'
                 ' VALUES (?, ?, ?, ?, ?)',
                 (g.user['username'], data['title'], data['instructions'], data['servings'], data['tag'])
             )
@@ -198,7 +198,7 @@ def create():
                 ).fetchone()
 
                 db.execute(
-                    'INSERT INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
+                    'INSERT OR REPLACE INTO recipeIngredientRelationship (recipeID, ingredientID, quantity, units)'
                     ' VALUES (?, ?, ?, ?)',
                     (recipeID['id'], ingID['id'], ing['quantity'], ing['portion'])
                 )
