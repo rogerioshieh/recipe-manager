@@ -28,11 +28,12 @@ def create_app(test_config=None):
     def hello():
         return 'Hellooooooooo, World!'
 
-    from . import db, auth, ingredients, recipes
+    from . import db, auth, ingredients, recipes, meals
     db.init_app(app)
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(ingredients.bp)
     app.register_blueprint(recipes.bp)
+    app.register_blueprint(meals.bp)
 
     return app

@@ -17,8 +17,8 @@ CREATE TABLE meal (
   id INTEGER PRIMARY KEY,
   author_id INTEGER NOT NULL,
   title TEXT NOT NULL,
-  body TEXT NOT NULL,
   tag TEXT CHECK (tag in ('meal_prep', 'easy', 'weekend', 'brunch', 'other')),
+  notes TEXT,
   FOREIGN KEY (author_id) REFERENCES user (id)
 );
 
@@ -62,6 +62,7 @@ CREATE INDEX idx_name ON ingredient(name_key)
 CREATE TABLE mealRecipeRelationship(
     mealID INTEGER NOT NULL,
     recipeID INTEGER NOT NULL,
+    servings INT NOT NULL,
     FOREIGN KEY (mealID) REFERENCES meal(id), 
     FOREIGN KEY (recipeID) REFERENCES recipe(id),
     UNIQUE (mealID, recipeID)
