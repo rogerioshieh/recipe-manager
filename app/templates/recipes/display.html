@@ -13,13 +13,14 @@
         </header>
 
         <div><br/> <b>Tag:</b>
-            {% if recipe[0]['tag'] == "meal_prep" %} Meal Prep
-            {% elif recipe[0]['tag'] == "easy" %} Quick & Easy
-            {% elif recipe[0]['tag'] == "weekend" %} Weekend cooking
-            {% elif recipe[0]['tag'] == "brunch" %} Brunch
+            {% if recipe[0]['tag'] == "starches" %} Carbs & Starches
+            {% elif recipe[0]['tag'] == "proteins" %} Protein
+            {% elif recipe[0]['tag'] == "beans" %} Beans & Legumes
+            {% elif recipe[0]['tag'] == "vegetables" %} Vegetables
             {% elif recipe[0]['tag'] == "dessert" %} Dessert
-            {% elif recipe[0]['tag'] == "condiment" %} Sauces & Condiments
-            {% elif recipe[0]['tag'] == "other" %} Other
+            {% elif recipe[0]['tag'] == "sauces" %} Sauces & Condiments
+            {% elif recipe[0]['tag'] == "spices" %} Spice Blends
+            {% elif recipe[0]['tag'] == "others" %} Other
             {% endif %}
         </div>
         </br>

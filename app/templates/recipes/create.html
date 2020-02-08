@@ -56,23 +56,25 @@
         <input name="servings" id="servings" type="number" min="1" step="1" value="{{ request.form['servings'] }}"
                required>
 
-         <div>
+        <div>
             <b>Tag:</b>
             <select name="tag" id="tag" required>
                 {% for tag in tags %}
                     <option value={{ tag }}>
-                        {% if tag == "meal_prep" %} Meal Prep
-                        {% elif tag == "easy" %} Quick & Easy
-                        {% elif tag == "weekend" %} Weekend cooking
-                        {% elif tag == "brunch" %} Brunch
+                        {% if tag == "starches" %} Carbs & Starches
+                        {% elif tag == "proteins" %} Protein
+                        {% elif tag == "beans" %} Beans & Legumes
+                        {% elif tag == "vegetables" %} Vegetables
                         {% elif tag == "dessert" %} Dessert
-                        {% elif tag == "condiment" %} Sauces & Condiments
-                        {% elif tag == "other" %} Other
+                        {% elif tag == "sauces" %} Sauces & Condiments
+                        {% elif tag == "spices" %} Spice Blends
+                        {% elif tag == "others" %} Other
                         {% endif %}
                     </option>
                 {% endfor %}
             </select>
-        </div> <br/>
+        </div>
+        <br/>
 
         <label for="body">Instructions</label>
         <textarea name="instructions" id="instructions">{{ request.form['body'] }}</textarea>
@@ -146,7 +148,7 @@
             data.servings = document.getElementById("servings").value;
             data.ingredients = [];
             data.instructions = document.getElementById("instructions").value;
-            data.tag =  document.getElementById("tag").value;
+            data.tag = document.getElementById("tag").value;
 
             var ingredients = document.getElementsByClassName('ingredient');
 
