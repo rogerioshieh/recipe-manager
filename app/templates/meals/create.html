@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}New Meal{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+
+    <form method="post">
+        <label for="title">Title</label>
+        <input name="title" id="title" value="{{ request.form['title'] }}" required>
+
+        <style>
+            #newlink {
+                width: auto
+            }
+        </style>
+
+        Number of total servings:
+        <input name="servings" id="servings" type="number" min="1" step="1" value="{{ request.form['servings'] }}"
+               required>
+
+
+        <div id="1" class="recipe">
+
+            Recipe:
+            <select class="rcpe" style="width:200px;">
+                {% for recipe in recipes %}
+                    <option>{{ recipe }}</option>
+                {% endfor %}
+            </select>
+
+            <a href="javascript:newlink()">Add New </a>
+        </div>
+
+    </br>
+        <div>
+            <b>Tag:</b>
+            <select name="tag" id="tag" required>
+                {% for tag in tags %}
+                    <option value={{ tag }}>
+                        {% if tag == "meal_prep" %} Meal Prep
+                        {% elif tag == "easy" %} Quick & Easy
+                        {% elif tag == "weekend" %} Weekend cooking
+                        {% elif tag == "brunch" %} Brunch
+                        {% elif tag == "other" %} Other
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <br/>
+
+        <label for="body">Notes</label>
+        <textarea name="notes" id="notes" placeholder="Goes well with...">{{ request.form['notes'] }}</textarea>
+        <br/>
+        <input type="submit" value="Submit" onclick="javascript:handleSubmit(event)">
+        <input type="reset" name="reset1">
+    </form>
+
+    <!-- Template for new recipe-->
+    <div id="newlinktpl" style="display:none">
+        Recipe:
+        <select class="rcpe" style="width:200px;">
+            {% for recipe in recipes %}
+                <option>{{ recipe }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <script type="text/javascript">
+
+        var ct = 1;
+
+        function newlink() {
+            ct++;
+            var div1 = document.createElement('div');
+            div1.id = ct;
+            div1.classList.add('ingredient');
+            // link to delete extended form elements
+            var delLink = '<a href="javascript:newlink()">Add New</a>  <a href="javascript:delIt(' + ct + ')">Delete</a>';
+            div1.innerHTML = document.getElementById('newlinktpl').innerHTML + delLink;
+            document.getElementById('1').appendChild(div1);
+        }
+
+        // function to delete the newly added set of elements
+        function delIt(eleId) {
+            d = document;
+            var ele = d.getElementById(eleId);
+            var parentEle = d.getElementById('1');
+            parentEle.removeChild(ele);
+        }
+
+        function handleSubmit(e) {
+
+            e.preventDefault();
+            var data = {};
+
+            data.title = document.getElementById("title").value;
+            data.servings = document.getElementById("servings").value;
+            data.notes = document.getElementById("notes").value;
+            data.tag = document.getElementById("tag").value;
+
+            data.recipes = [];
+            var recipes = document.getElementsByClassName('recipe');
+
+            for (let recipe of recipes) {
+                let rcpe = {};
+                rcpe.title = recipe.querySelector(".rcpe").value;
+                data.recipes.push(rcpe);
+            }
+
+            fetch('/meals/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify(data)
+            });
+
+            alert(JSON.stringify(data));
+
+        }
+    </script>
+{% endblock %}
+
+
