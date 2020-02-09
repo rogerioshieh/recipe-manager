@@ -3,6 +3,8 @@ version: '3'
 services:
 
   web:
+    labels:
+      shipyard.route: '/'
     build: '.'
     ports:
       - '1234:8080'
