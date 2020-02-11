@@ -3,9 +3,10 @@ FROM python:3.6-alpine3.6
 WORKDIR /srv
 
 # Create an app user and run as that
-RUN adduser -S app
-RUN chown -R app /srv
-USER app
+#RUN adduser -S app
+##RUN chown -R app /srv
+#RUN chown -R www-data: /srv/instance
+#USER app
 
 # Install Python dependencies
 #ADD requirements.txt .
