@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, redirect, url_for
 
 def create_app(test_config=None):
     # create and configure the app
@@ -23,11 +23,6 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hellooooooooo, World!'
-
     from . import db, auth, ingredients, recipes, meals
     db.init_app(app)
 
@@ -35,5 +30,11 @@ def create_app(test_config=None):
     app.register_blueprint(ingredients.bp)
     app.register_blueprint(recipes.bp)
     app.register_blueprint(meals.bp)
+
+    @app.route('/')
+    def index():
+        """ Displays the index page accessible at '/'
+        """
+        return redirect(url_for('recipes.index'))
 
     return app
