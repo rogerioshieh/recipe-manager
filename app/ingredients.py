@@ -77,10 +77,51 @@ def get_ing(name_key):
 @bp.route('/')
 def index():
     db = get_db()
-    ingredients = db.execute(
-        'SELECT * FROM ingredient ORDER BY name ASC'
+    ingredients_db = db.execute(
+        'SELECT * FROM ingredient ORDER BY tag'
     ).fetchall()
-    return render_template('ingredients/index.html', ingredients=ingredients)
+
+    #this gets the tag with most ingredients. It will be used to build a table with empty elements
+    max_length = db.execute(
+        'SELECT count(tag) as c FROM ingredient GROUP BY tag order by count(tag) DESC;'
+    ).fetchone()['c']
+
+    carbs, fats, proteins, vegetables, legumes, fruit, nuts, sauces, dairy, spices, others = ([] for i in range(11))
+
+    for ing in ingredients_db:
+        if ing['tag'] == 'carbs':
+            carbs.append(ing)
+        elif ing['tag'] == 'fats':
+            fats.append(ing)
+        elif ing['tag'] == 'proteins':
+            proteins.append(ing)
+        elif ing['tag'] == 'vegetables':
+            vegetables.append(ing)
+        elif ing['tag'] == 'legumes':
+            legumes.append(ing)
+        elif ing['tag'] == 'fruit':
+            fruit.append(ing)
+        elif ing['tag'] == 'nuts':
+            nuts.append(ing)
+        elif ing['tag'] == 'sauces':
+            sauces.append(ing)
+        elif ing['tag'] == 'dairy':
+            dairy.append(ing)
+        elif ing['tag'] == 'spices':
+            spices.append(ing)
+        elif ing['tag'] == 'others':
+            others.append(ing)
+
+    ingredients = [carbs, fats, proteins, vegetables, legumes, fruit, nuts, sauces, dairy, spices, others]
+
+    for ing in ingredients:
+        while len(ing) < max_length:
+            ing.append(None)
+
+    #transpose the array so that it is organized in columns
+    ingredients = [list(i) for i in zip(*ingredients)]
+
+    return render_template('ingredients/index.html', ingredients=ingredients, tags=__tags__)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
