@@ -8,14 +8,54 @@
 {% endblock %}
 
 {% block content %}
-    {% for recipe in recipes %}
-        <header>
-            <div>
-                <a class="action" href="{{ url_for('recipes.display_recipe', recipeID=recipe[1]) }}">{{ recipe[0] }}</a>
-            </div>
+    <div style="overflow-x:auto;">
+        <table class="table table-striped table-hover">
+            <thead class="thead-light">
+            <tr>
+                {% for tag in tags %}
+                    {% if tag == "starches" %}
+                        <th scope='col'>Carbs & Starches</th>
+                    {% elif tag == "proteins" %}
+                        <th scope='col'>Proteins</th>
+                    {% elif tag == "beans" %}
+                        <th scope='col'>Beans & Grains</th>
+                    {% elif tag == "vegetables" %}
+                        <th scope='col'>Vegetables</th>
+                    {% elif tag == "dessert" %}
+                        <th scope='col'> Dessert</th>
+                    {% elif tag == "sauces" %}
+                        <th scope='col'>Sauces and Condiments</th>
+                    {% elif tag == "spices" %}
+                        <th scope='col'>Spices</th>
+                    {% elif tag == "others" %}
+                        <th scope='col'>Others</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            </thead>
 
-
-        </header>
-
-    {% endfor %}
+            <tbody>
+            {% for column in recipes %}
+                <tr> {% set outer_loop = loop %}
+                    {% for recipe in column %}
+                        {% set inner_loop = loop %}
+                        {% if recipe != None %}
+                            <td><a class="action"
+                                   href="{{ url_for('recipes.display_recipe', recipeID=recipe['id']) }}">{{ recipe['title'] }}</a>
+                                <div class="tooltip"><img src="https://img.icons8.com/flat_round/12/000000/info.png">
+                                    <span class="tooltiptext">
+                                         Serves: {{ recipe['servings'] }} <br>
+                                        Price per serving: ${{ prices[outer_loop.index0][inner_loop.index0] }}
+                                    </span>
+                                </div>
+                            </td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

@@ -5,7 +5,7 @@ Views:
 - Index (displays most recently added recipes)
 - Create
 - Update
-- Recipe (shows recipe details)
+- Display (shows recipe details)
 - Delete (does not have a template)
 
 TODO:
@@ -25,7 +25,6 @@ bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 __tags__ = ['starches', 'proteins', 'beans', 'vegetables', 'dessert', 'sauces', 'spices', 'others']
-
 
 def get_ingredients():
 
@@ -83,17 +82,88 @@ def convert(unit, size):
 
     return res
 
+def get_total_price(recipeID):
+    db = get_db()
+    recipeID = str(recipeID)
+    recipe = db.execute('SELECT * from RECIPE where id = ?', (recipeID)).fetchall()
+
+    recipe.append(db.execute(
+        'SELECT ingredientID, quantity, units FROM recipeIngredientRelationship'
+        ' WHERE recipeID=(?)', (recipeID,)
+    ).fetchall())
+
+    servings = recipe[0]['servings'] if recipe[0]['servings'] else 1
+    prices = []
+
+    if recipe[1]:
+        for ing in recipe[1]:
+            ing_id = str(ing['ingredientID'])
+            ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
+                                ing_id).fetchone()
+
+            quantity_g_ml = convert(ing['units'], ing['quantity'])
+
+            prices.append(((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
+                            ) * quantity_g_ml) / (100 * servings))
+
+    return round(sum(prices), 2)
+
 
 @bp.route('/')
 def index():
     db = get_db()
-    recipes_db = db.execute('SELECT title, id, tag FROM recipe').fetchall()
-    recipes = []
+    recipes_db = db.execute('SELECT * FROM recipe ORDER BY tag, title').fetchall()
 
-    for i in range(len(recipes_db)):
-        recipes.append([recipes_db[i]['title'], recipes_db[i]['id'], recipes_db[i]['tag']])
+    #gets the tag with most recipes (will be used to build a table with empty elements)
+    max_length = db.execute(
+        'SELECT count(tag) as c FROM recipe GROUP BY tag order by count(tag) DESC;'
+    ).fetchone()['c']
 
-    return render_template('recipes/index.html', recipes=recipes)
+    starches, proteins, beans, vegetables, dessert, sauces, spices, others = ([] for i in range(8))
+    starches_p, proteins_p, beans_p, vegetables_p, dessert_p, sauces_p, spices_p, others_p = ([] for i in range(8))
+
+    for recipe in recipes_db: # populate lists
+        if recipe['tag'] == 'starches':
+            starches.append(recipe)
+            starches_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'proteins':
+            proteins.append(recipe)
+            proteins_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'beans':
+            beans.append(recipe)
+            beans_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'vegetables':
+            vegetables.append(recipe)
+            vegetables_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'dessert':
+            dessert.append(recipe)
+            dessert_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'sauces':
+            sauces.append(recipe)
+            sauces_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'spices':
+            spices.append(recipe)
+            spices_p.append(get_total_price(recipe['id']))
+        elif recipe['tag'] == 'others':
+            others.append(recipe)
+            others_p.append(get_total_price(recipe['id']))
+
+    recipes = [starches, proteins, beans, vegetables, dessert, sauces, spices, others]
+    prices = [starches_p, proteins_p, beans_p, vegetables_p, dessert_p, sauces_p, spices_p, others_p]
+
+    for r in recipes: #padding so that every list has the same # of elements
+        while len(r) < max_length:
+            r.append(None)
+
+    for p in prices: #padding so that every list has the same # of elements
+        while len(p) < max_length:
+            p.append(None)
+
+    #transpose lists so HTML page populates table by row
+    recipes = [list(i) for i in zip(*recipes)]
+    prices = [list(i) for i in zip(*prices)]
+
+    return render_template('recipes/index.html', recipes=recipes, tags=__tags__, prices=prices)
 
 
 '''
@@ -126,7 +196,7 @@ def display_recipe(recipeID):
 
             ing_id = str(ing['ingredientID'])
             ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                                  (ing_id)).fetchone()
+                                ing_id).fetchone()
             ing_names.append(ing_db['name'])
 
             macro_db = db.execute(

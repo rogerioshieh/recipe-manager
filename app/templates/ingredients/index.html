@@ -53,22 +53,22 @@
                                    href="{{ url_for('ingredients.update', name_key=ing['name_key']) }}">{{ ing['name'] }}</a>
                                 <div class="tooltip"><img src="https://img.icons8.com/flat_round/12/000000/info.png">
                                     <span class="tooltiptext">
-                                        Serving size: {{ ing['portion_size'] }} {{ ing['portion_size_unit'] }}
+                                         Serving size: {{ ing['portion_size'] }} {{ ing['portion_size_unit'] }}
                                         <br><br>
                                         {% if ing['price'] % 100 == 0 %}
-                                            ${{ (ing['price'] /100)|int }}.00 per
+                                             ${{ (ing['price'] /100)|int }}.00 per
                                             {{ ing['price_size']|int }}{{ ing['price_size_unit'] }}
                                         {% elif ing['price'] % 10 == 0 %}
-                                            ${{ (ing['price'] /100)|int }}0 per
+                                             ${{ (ing['price'] /100)|int }}0 per
                                             {{ ing['price_size']|int }}{{ ing['price_size_unit'] }}
                                         {% else %}
-                                            ${{ ing['price']/100 }} per
+                                             ${{ ing['price']/100 }} per
                                             {{ ing['price_size']|int }}{{ ing['price_size_unit'] }}
                                         {% endif %}
                                         <br><br>
-                                        <em>Protein</em>: {{ ing['protein'] }} g
-                        <br><em>Fat</em>: {{ ing['fat'] }} g
-                        <br> <em>Carbs</em>: {{ ing['carbs'] }} g
+                                        <em> Protein</em>: {{ ing['protein'] }} g
+                        <br><em> Fat</em>: {{ ing['fat'] }} g
+                        <br> <em> Carbs</em>: {{ ing['carbs'] }} g
 
                                     </span>
                                 </div>
