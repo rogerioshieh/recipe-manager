@@ -78,7 +78,7 @@ def get_ing(name_key):
 def index():
     db = get_db()
     ingredients_db = db.execute(
-        'SELECT * FROM ingredient ORDER BY tag'
+        'SELECT * FROM ingredient ORDER BY tag, name'
     ).fetchall()
 
     #this gets the tag with most ingredients. It will be used to build a table with empty elements
