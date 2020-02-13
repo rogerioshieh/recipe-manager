@@ -81,13 +81,15 @@ def index():
         'SELECT * FROM ingredient ORDER BY tag, name'
     ).fetchall()
 
-    #this gets the tag with most ingredients. It will be used to build a table with empty elements
+    #gets the tag with most ingredients (will be used to build a table with empty elements)
     max_length = db.execute(
         'SELECT count(tag) as c FROM ingredient GROUP BY tag order by count(tag) DESC;'
     ).fetchone()['c']
 
+    #creates empty lists which will be populated
     carbs, fats, proteins, vegetables, legumes, fruit, nuts, sauces, dairy, spices, others = ([] for i in range(11))
 
+    #populate lists
     for ing in ingredients_db:
         if ing['tag'] == 'carbs':
             carbs.append(ing)
@@ -118,7 +120,7 @@ def index():
         while len(ing) < max_length:
             ing.append(None)
 
-    #transpose the array so that it is organized in columns
+    #transpose the array so that it is organized in rows
     ingredients = [list(i) for i in zip(*ingredients)]
 
     return render_template('ingredients/index.html', ingredients=ingredients, tags=__tags__)
