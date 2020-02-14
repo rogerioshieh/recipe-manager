@@ -25,8 +25,8 @@ bp = Blueprint("meals", __name__, url_prefix="/meals")
 
 __tags__ = ['meal_prep', 'easy', 'weekend', 'brunch', 'other']
 
-def get_recipes():
 
+def get_recipes():
     res = []
     for recipe in get_db().execute('SELECT * FROM recipe ORDER BY title ASC').fetchall():
         res.append(recipe['title'])
@@ -35,7 +35,6 @@ def get_recipes():
 
 
 def get_meal(meal_id):
-
     meal = get_db().execute(
         'SELECT * FROM meal WHERE id = ?',
         (int(meal_id),)
@@ -98,7 +97,7 @@ def get_macros_price(recipe, desired_servings):
     for ing in ings:
         ing_id = str(ing['ingredientID'])
         ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                              (ing_id)).fetchone()
+                            (ing_id)).fetchone()
 
         macro_db = db.execute(
             'SELECT carbs, fat, protein, calories, portion_size, '
@@ -106,34 +105,105 @@ def get_macros_price(recipe, desired_servings):
             (ing_id)).fetchone()
 
         macros_ing = [macro_db['carbs'], macro_db['fat'],
-                     macro_db['protein'], macro_db['calories']]
+                      macro_db['protein'], macro_db['calories']]
 
         quantity_g_ml = convert(ing['units'], ing['quantity'])
         ratio = macro_db['portion_converted'] / quantity_g_ml
 
-        #updates macro_totals with recipe macros
+        # updates macro_totals with recipe macros
         macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
 
         prices_total += ((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
-                        ) * quantity_g_ml ) / (100 * servings)
+                          ) * quantity_g_ml) / (100 * servings)
 
     res.append([round(x * servings / desired_servings, 1) for x in macro_totals])
     res.append(round(prices_total * servings / desired_servings, 2))
 
-    print(res)
     return res
+
+
+def get_total_price(meal_id):
+
+    db = get_db()
+    servings = db.execute('SELECT servings FROM mealRecipeRelationship WHERE mealID=?', str(meal_id)).fetchone()['servings']
+
+    recipe_ids = db.execute('SELECT * FROM mealRecipeRelationship WHERE mealID=?', str(meal_id)).fetchall()
+
+    prices = []
+
+    for recipe in recipe_ids:
+        recipe_db = db.execute('SELECT * FROM recipe WHERE id=(?)', (recipe['recipeID'],)).fetchone()
+        prices.append(get_macros_price(recipe_db, int(servings))[1])
+
+    print(sum(prices))
+    return sum(prices)
+
+
+def get_servings(meal_id):
+
+    db = get_db()
+    return db.execute('SELECT servings FROM mealRecipeRelationship WHERE mealID=?', (meal_id,)).fetchone()['servings']
 
 
 @bp.route('/')
 def index():
     db = get_db()
-    meals_db = db.execute('SELECT title, id, tag FROM meal').fetchall()
-    meals = []
+    meals_db = db.execute('SELECT * FROM meal ORDER BY tag, title').fetchall()
 
-    for i in range(len(meals_db)):
-        meals.append([meals_db[i]['title'], meals_db[i]['id'], meals_db[i]['tag']])
+    # gets the tag with most recipes (will be used to build a table with empty elements)
+    max_length = db.execute(
+        'SELECT count(tag) as c FROM meal GROUP BY tag order by count(tag) DESC;'
+    ).fetchone()['c']
 
-    return render_template('meals/index.html', meals=meals)
+    meal_prep, easy, weekend, brunch, other = ([] for i in range(5))
+    meal_prep_p, easy_p, weekend_p, brunch_p, other_p = ([] for i in range(5)) #prices
+    meal_prep_s, easy_s, weekend_s, brunch_s, other_s = ([] for i in range(5))  # prices
+
+    for meal in meals_db:  # populate lists
+        print(get_servings(meal['id']))
+        if meal['tag'] == 'meal_prep':
+            meal_prep.append(meal)
+            meal_prep_p.append(get_total_price(meal['id']))
+            meal_prep_s.append(get_servings(meal['id']))
+        elif meal['tag'] == 'easy':
+            easy.append(meal)
+            easy_p.append(get_total_price(meal['id']))
+            easy_s.append(get_servings(meal['id']))
+        elif meal['tag'] == 'weekend':
+            weekend.append(meal)
+            weekend_p.append(get_total_price(meal['id']))
+            weekend_s.append(get_servings(meal['id']))
+        elif meal['tag'] == 'brunch':
+            brunch.append(meal)
+            brunch_p.append(get_total_price(meal['id']))
+            brunch_s.append(get_servings(meal['id']))
+        elif meal['tag'] == 'other':
+            other.append(meal)
+            other_p.append(get_total_price(meal['id']))
+            other_s.append(get_servings(meal['id']))
+
+    meals = [meal_prep, easy, weekend, brunch, other]
+    prices = [meal_prep_p, easy_p, weekend_p, brunch_p, other_p]
+    servings = [meal_prep_s, easy_s, weekend_s, brunch_s, other_s]
+
+    for m in meals:  # padding so that every list has the same # of elements
+        while len(m) < max_length:
+            m.append(None)
+
+    for p in prices:  # padding so that every list has the same # of elements
+        while len(p) < max_length:
+            p.append(None)
+
+    for s in servings:  # padding so that every list has the same # of elements
+        while len(s) < max_length:
+            s.append(None)
+
+    # transpose lists so HTML page populates table by row
+    meals = [list(i) for i in zip(*meals)]
+    prices = [list(i) for i in zip(*prices)]
+    servings = [list(i) for i in zip(*servings)]
+
+    return render_template('meals/index.html', meals=meals, tags=__tags__, prices=prices, servings=servings)
 
 
 '''
@@ -141,6 +211,8 @@ Displays a recipe given its index number.
 ==> recipe = [mealSQL, list(recipeSQL), ing names: list(str), 
 macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
 '''
+
+
 @bp.route('/<meal_id>/')
 def display_meal(meal_id):
     db = get_db()
@@ -163,11 +235,10 @@ def display_meal(meal_id):
 
     if recipes:
         for recipe in recipes:
-
             recipe_id = str(recipe['recipeID'])
             print(recipe_id)
             recipe_db = db.execute('SELECT * FROM recipe WHERE id=?',
-                                  (recipe_id)).fetchone()
+                                   (recipe_id)).fetchone()
             recipes_db.append(recipe_db)
 
             temp = get_macros_price(recipe_db, servings)
@@ -275,7 +346,6 @@ def update(meal_id):
 
             db.commit()
             return redirect(url_for('meals.index'))
-
 
     db = get_db()
     meal = get_meal(meal_id)
