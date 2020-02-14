@@ -248,7 +248,7 @@ def display_meal(meal_id):
             macro_totals = [round(x + y, 1) for x, y in zip(macro_totals, temp[0])]
 
     return render_template('meals/display.html', meal=meal, recipes=recipes_db,
-                           servings=servings, macro_totals=macro_totals,
+                           servings=servings, macro_totals=macro_totals, total_price=round(sum(prices), 2),
                            macros=macros_per_recipe, prices=[round(x, 2) for x in prices])
 
 
