@@ -12,7 +12,43 @@
             </div>
         </header>
 
-        <h4>Serves: {{ servings }}</h4>
+        <table class="table table-hover">
+            <caption>MEAL INFO (per serving)</caption>
+            <thead>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">Carbs (g)</th>
+                <th scope="col">Fat (g)</th>
+                <th scope="col">Protein (g)</th>
+                <th scope="col">Calories</th>
+                <th scope="col">Price</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for recipe in recipes %}
+                <tr>
+                <th scope="row">{{ recipe['title'] }}</th>
+                <td>{{ macros[loop.index0][0] }} </td>
+                <td>{{ macros[loop.index0][1] }}</td>
+                <td>{{ macros[loop.index0][2] }}</td>
+                <td>{{ macros[loop.index0][3] }}</td>
+                <td>${{ prices[loop.index0] }}</td>
+            {% endfor %}
+            </tr>
+            <tr>
+            <tr>
+                <th scope="row" bgcolor=#fffaf0>TOTAL</th>
+                <td bgcolor=#fffaf0><strong>{{ macro_totals[0] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ macro_totals[1] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ macro_totals[2] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ macro_totals[3] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>${{ total_price }}</strong></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <i>Serves {{ servings }}</i>
 
         <div><br/> <b>Tag:</b>
             {% if meal['tag'] == "meal_prep" %} Meal Prep
@@ -22,70 +58,12 @@
             {% elif meal['tag'] == "other" %} Other
             {% endif %}
         </div>
-        </br>
 
-        <table>
-            <caption>RECIPES</caption>
-            <tr>
-                {% for recipe in recipes %}
+        {% if meal['notes'] != "" %}
+            <h4>Notes:</h4>
+            <p class="body">{{ meal['notes'] }}</p>
+        {% endif %}
 
-                    <td style="background-color: lightgray">
-                        {{ recipe['title'] }}
-                        {% if not loop.last %}
-                            <br>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for recipe in recipes %}
-                    <td>
-                     ${{ prices[loop.index0] }}
-                        {% if not loop.last %}
-                            <br>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-
-            </tr>
-        </table>
-
-        <br>
-        <table class="table table-hover">
-            <caption>NUTRITION (per serving)</caption>
-            <thead>
-            <tr>
-                <th scope="col"></th>
-                <th scope="col">Carbs (g)</th>
-                <th scope="col">Fat (g)</th>
-                <th scope="col">Protein (g)</th>
-                <th scope="col">Calories</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for recipe in recipes %}
-                <tr>
-                <th scope="row">{{ recipe['title'] }}</th>
-                <td>{{ macros[loop.index0][0] }}</td>
-                <td>{{ macros[loop.index0][1] }}</td>
-                <td>{{ macros[loop.index0][2] }}</td>
-                <td>{{ macros[loop.index0][3] }}</td>
-            {% endfor %}
-            </tr>
-            <tr>
-            <tr>
-                <th scope="row" bgcolor="#fffafa">TOTAL</th>
-                <td bgcolor=#fffafa"><strong>{{ macro_totals[0] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ macro_totals[1] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ macro_totals[2] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ macro_totals[3] }}</strong></td>
-            </tr>
-            </tbody>
-        </table>
-
-        <h4>Notes:</h4>
-        <p class="body">{{ meal['notes'] }}</p>
     </article>
 
     <form action="{{ url_for('meals.delete', name_key=meal['id']) }}" method="post">
