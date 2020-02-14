@@ -168,7 +168,7 @@ def index():
 
 '''
 Displays a recipe given its index number.
-==> recipe = [recipeSQL, list(ingSQL), ing names: list(str), 
+==> recipe = [recipeSQL, list(ingSQL), ing_names: list(str), 
 macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
 '''
 @bp.route('/<recipeID>/')
@@ -222,7 +222,8 @@ def display_recipe(recipeID):
     recipe.append(macros_recipe)
     recipe.append([round(x, 1) for x in macro_totals])
 
-    return render_template('recipes/display.html', recipe=recipe, nutritions=macros_recipe, prices=[round(x, 2) for x in prices])
+    return render_template('recipes/display.html', recipe=recipe, total_price=round(sum(prices), 2),
+                           nutritions=macros_recipe, prices=[round(x, 2) for x in prices])
 
 
 @bp.route('/create', methods=('GET', 'POST'))

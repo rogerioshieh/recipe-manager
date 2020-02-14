@@ -12,6 +12,57 @@
             </div>
         </header>
 
+         <br/>
+        <div><i>Serves {{ recipe[0]['servings'] }}</i>
+        <br/>
+
+        <table class="table table-hover">
+            <caption style="font-size: larger">INFO PER SERVING</caption>
+            <thead>
+            <tr>
+                <th style="background-color: aliceblue" scope="col">RECIPE INGREDIENTS</th>
+                <th scope="col">Price</th>
+                <th scope="col">Carbs (g)</th>
+                <th scope="col">Fat (g)</th>
+                <th scope="col">Protein (g)</th>
+                <th scope="col">Calories</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for ing in recipe[2] %}
+                {% set i = loop.index0 %}
+                <tr>
+                {#                checking if decimal#}
+                {% if ((recipe[1][i]['quantity'] * 10)|int) % 10 == 0 %}
+                    <th style="background-color: aliceblue" scope="row">{{ recipe[1][i]['quantity']|int }}
+                        {{ recipe[1][i]['units'] }} {{ ing }}</th>
+                {% else %}
+                    <th style="background-color: aliceblue" scope="row">{{ recipe[1][i]['quantity'] }}
+                        {{ recipe[1][i]['units'] }} {{ ing }}</th>
+                {% endif %}
+                <td>${{ prices[i] }} </td>
+                <td>{{ recipe[3][i][0] }}</td>
+                <td>{{ recipe[3][i][1] }}</td>
+                <td>{{ recipe[3][i][2] }}</td>
+                <td>{{ recipe[3][i][3] }}</td>
+            {% endfor %}
+            </tr>
+            <tr>
+            <tr>
+                <th scope="row" bgcolor=#fffaf0 style="text-align: right">TOTAL</th>
+                <td bgcolor=#fffaf0><strong>${{ total_price }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ recipe[4][0] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ recipe[4][1] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ recipe[4][2] }}</strong></td>
+                <td bgcolor=#fffaf0><strong>{{ recipe[4][3] }}</strong></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h4>Steps:</h4>
+        <p class="body">{{ recipe[0]['body'] }}</p>
+
         <div><br/> <b>Tag:</b>
             {% if recipe[0]['tag'] == "starches" %} Carbs & Starches
             {% elif recipe[0]['tag'] == "proteins" %} Protein
@@ -23,70 +74,6 @@
             {% elif recipe[0]['tag'] == "others" %} Other
             {% endif %}
         </div>
-        </br>
-
-        <table>
-            <caption>INGREDIENTS</caption>
-            <tr>
-                {% for ing in recipe[2] %}
-
-                    <td style="background-color: lightgray">
-                        {{ ing }}
-                        {% if not loop.last %}
-                            <br>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for ing in recipe[1] %}
-                    <td>
-                        {{ ing['quantity'] }} {{ ing['units'] }} -- ${{ prices[loop.index0] }}
-                        {% if not loop.last %}
-                            <br>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-
-            </tr>
-        </table>
-
-        <br>
-        <table class="table table-hover">
-            <caption>NUTRITION (per serving)</caption>
-            <thead>
-            <tr>
-                <th scope="col"></th>
-                <th scope="col">Carbs (g)</th>
-                <th scope="col">Fat (g)</th>
-                <th scope="col">Protein (g)</th>
-                <th scope="col">Calories</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for ing in recipe[2] %}
-                <tr>
-                <th scope="row">{{ ing }}</th>
-                <td>{{ recipe[3][loop.index0][0] }}</td>
-                <td>{{ recipe[3][loop.index0][1] }}</td>
-                <td>{{ recipe[3][loop.index0][2] }}</td>
-                <td>{{ recipe[3][loop.index0][3] }}</td>
-            {% endfor %}
-            </tr>
-            <tr>
-            <tr>
-                <th scope="row" bgcolor="#fffafa">TOTAL</th>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][0] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][1] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][2] }}</strong></td>
-                <td bgcolor=#fffafa"><strong>{{ recipe[4][3] }}</strong></td>
-            </tr>
-            </tbody>
-        </table>
-        <h4>Serves: {{ recipe[0]['servings'] }}</h4>
-        <h4>Steps:</h4>
-        <p class="body">{{ recipe[0]['body'] }}</p>
     </article>
 
     <form action="{{ url_for('recipes.delete', name_key=recipe[0]['id']) }}" method="post">
