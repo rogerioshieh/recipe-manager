@@ -28,7 +28,7 @@
             <tbody>
             {% for recipe in recipes %}
                 <tr>
-                <th scope="row">{{ recipe['title'] }}</th>
+                <th scope="row"><a href="{{ url_for('recipes.display_recipe', recipeID=recipe['id']) }}">{{ recipe['title'] }}</a></th>
                 <td>{{ macros[loop.index0][0] }} </td>
                 <td>{{ macros[loop.index0][1] }}</td>
                 <td>{{ macros[loop.index0][2] }}</td>
