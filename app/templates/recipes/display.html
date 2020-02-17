@@ -12,71 +12,75 @@
             </div>
         </header>
 
-         <br/>
-        <div><i>Serves {{ recipe[0]['servings'] }}</i>
         <br/>
+        <div><i>Serves {{ recipe[0]['servings'] }}</i>
+            <br/>
 
-        <table class="table table-hover">
-            <caption style="font-size: larger">INFO PER SERVING</caption>
-            <thead>
-            <tr>
-                <th style="background-color: aliceblue" scope="col">RECIPE INGREDIENTS</th>
-                <th scope="col">Price</th>
-                <th scope="col">Carbs (g)</th>
-                <th scope="col">Fat (g)</th>
-                <th scope="col">Protein (g)</th>
-                <th scope="col">Calories</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for ing in recipe[2] %}
-                {% set i = loop.index0 %}
+            <table class="table table-hover">
+                <caption style="font-size: larger">INFO PER SERVING</caption>
+                <thead>
                 <tr>
-                {#                checking if decimal#}
-                {% if ((recipe[1][i]['quantity'] * 10)|int) % 10 == 0 %}
-                    <th style="background-color: aliceblue" scope="row">{{ recipe[1][i]['quantity']|int }}
-                        {{ recipe[1][i]['units'] }} {{ ing }}</th>
-                {% else %}
-                    <th style="background-color: aliceblue" scope="row">{{ recipe[1][i]['quantity'] }}
-                        {{ recipe[1][i]['units'] }} {{ ing }}</th>
+                    <th style="background-color: aliceblue" scope="col">RECIPE INGREDIENTS</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Carbs (g)</th>
+                    <th scope="col">Fat (g)</th>
+                    <th scope="col">Protein (g)</th>
+                    <th scope="col">Calories</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for ing in recipe[2] %}
+                    {% set i = loop.index0 %}
+                    <tr>
+                    {#                checking if decimal#}
+                    {% if ((recipe[1][i]['quantity'] * 10)|int) % 10 == 0 %}
+                        <th style="background-color: aliceblue" scope="row">{{ recipe[1][i]['quantity']|int }}
+                            {{ recipe[1][i]['units'] }} {{ ing }}</th>
+                    {% else %}
+                        <th style="background-color: aliceblue" scope="row">{{ recipe[1][i]['quantity'] }}
+                            {{ recipe[1][i]['units'] }} {{ ing }}</th>
+                    {% endif %}
+                    <td>${{ prices[i] }} </td>
+                    <td>{{ recipe[3][i][0] }}</td>
+                    <td>{{ recipe[3][i][1] }}</td>
+                    <td>{{ recipe[3][i][2] }}</td>
+                    <td>{{ recipe[3][i][3] }}</td>
+                {% endfor %}
+                </tr>
+                <tr>
+                <tr>
+                    <th scope="row" bgcolor=#fffaf0 style="text-align: right">TOTAL</th>
+                    <td bgcolor=#fffaf0><strong>${{ total_price }}</strong></td>
+                    <td bgcolor=#fffaf0><strong>{{ recipe[4][0] }}</strong></td>
+                    <td bgcolor=#fffaf0><strong>{{ recipe[4][1] }}</strong></td>
+                    <td bgcolor=#fffaf0><strong>{{ recipe[4][2] }}</strong></td>
+                    <td bgcolor=#fffaf0><strong>{{ recipe[4][3] }}</strong></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h4>Steps:</h4>
+            <p class="body">{{ recipe[0]['body'] }}</p>
+
+            <div><br/> <b>Tag:</b>
+                {% if recipe[0]['tag'] == "starches" %} Carbs & Starches
+                {% elif recipe[0]['tag'] == "proteins" %} Protein
+                {% elif recipe[0]['tag'] == "beans" %} Beans & Legumes
+                {% elif recipe[0]['tag'] == "vegetables" %} Vegetables
+                {% elif recipe[0]['tag'] == "dessert" %} Dessert
+                {% elif recipe[0]['tag'] == "sauces" %} Sauces & Condiments
+                {% elif recipe[0]['tag'] == "spices" %} Spice Blends
+                {% elif recipe[0]['tag'] == "others" %} Other
                 {% endif %}
-                <td>${{ prices[i] }} </td>
-                <td>{{ recipe[3][i][0] }}</td>
-                <td>{{ recipe[3][i][1] }}</td>
-                <td>{{ recipe[3][i][2] }}</td>
-                <td>{{ recipe[3][i][3] }}</td>
-            {% endfor %}
-            </tr>
-            <tr>
-            <tr>
-                <th scope="row" bgcolor=#fffaf0 style="text-align: right">TOTAL</th>
-                <td bgcolor=#fffaf0><strong>${{ total_price }}</strong></td>
-                <td bgcolor=#fffaf0><strong>{{ recipe[4][0] }}</strong></td>
-                <td bgcolor=#fffaf0><strong>{{ recipe[4][1] }}</strong></td>
-                <td bgcolor=#fffaf0><strong>{{ recipe[4][2] }}</strong></td>
-                <td bgcolor=#fffaf0><strong>{{ recipe[4][3] }}</strong></td>
-            </tr>
-            </tbody>
-        </table>
-
-        <h4>Steps:</h4>
-        <p class="body">{{ recipe[0]['body'] }}</p>
-
-        <div><br/> <b>Tag:</b>
-            {% if recipe[0]['tag'] == "starches" %} Carbs & Starches
-            {% elif recipe[0]['tag'] == "proteins" %} Protein
-            {% elif recipe[0]['tag'] == "beans" %} Beans & Legumes
-            {% elif recipe[0]['tag'] == "vegetables" %} Vegetables
-            {% elif recipe[0]['tag'] == "dessert" %} Dessert
-            {% elif recipe[0]['tag'] == "sauces" %} Sauces & Condiments
-            {% elif recipe[0]['tag'] == "spices" %} Spice Blends
-            {% elif recipe[0]['tag'] == "others" %} Other
-            {% endif %}
-        </div>
+            </div>
     </article>
 
     <form action="{{ url_for('recipes.delete', name_key=recipe[0]['id']) }}" method="post">
-        <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+
+        <div><input class="danger" type="submit" value="Delete"
+                    onclick="return confirm('ALL MEALS CONTAINING THE SELECTED RECIPE WILL BE DELETED AS WELL. \n \n Are you sure?');">
+            Note: ALL MEALS CONTAINING THE SELECTED RECIPE WILL BE DELETED AS WELL.
+        </div>
     </form>
 {% endblock %}

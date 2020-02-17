@@ -127,7 +127,7 @@ def index():
 
 
 @bp.route('/create', methods=('GET', 'POST'))
-# @login_required
+@login_required
 def create():
     if request.method == 'POST':
         name = request.form['name']
@@ -189,6 +189,7 @@ def create():
 
 
 @bp.route('/<name_key>/update', methods=('GET', 'POST'))
+@login_required
 def update(name_key):
     ingredient = get_ing(name_key)
 
