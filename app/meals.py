@@ -148,7 +148,16 @@ def get_servings(meal_id):
 @bp.route('/')
 def index():
     db = get_db()
-    meals_db = db.execute('SELECT * FROM meal ORDER BY tag, title').fetchall()
+
+    if g.user:
+        meals_db = db.execute('SELECT * FROM meal WHERE author_id = ? ORDER BY tag, title',
+                              (g.user['username'],)).fetchall()
+    else:
+        meals_db = db.execute('SELECT * FROM meal WHERE author_id = ? ORDER BY tag, title',
+                              ('demo_recipes',)).fetchall()
+
+    if len(meals_db) == 0:
+        return render_template('meals/index.html', meals=meals_db)
 
     # gets the tag with most recipes (will be used to build a table with empty elements)
     max_length = db.execute(

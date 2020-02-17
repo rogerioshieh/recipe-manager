@@ -112,7 +112,16 @@ def get_total_price(recipeID):
 @bp.route('/')
 def index():
     db = get_db()
-    recipes_db = db.execute('SELECT * FROM recipe ORDER BY tag, title').fetchall()
+
+    if g.user:
+        recipes_db = db.execute('SELECT * FROM recipe WHERE author_id=? ORDER BY tag, title',
+                                (g.user['username'],)).fetchall()
+    else:
+        recipes_db = db.execute('SELECT * FROM recipe WHERE author_id=? ORDER BY tag, title',
+                                ('demo_recipes',)).fetchall()
+
+    if len(recipes_db) == 0:
+        return render_template('recipes/index.html', recipes=recipes_db)
 
     #gets the tag with most recipes (will be used to build a table with empty elements)
     max_length = db.execute(
@@ -282,6 +291,7 @@ def create():
 
 
 @bp.route('/<recipeID>/update', methods=('GET', 'POST'))
+@login_required
 def update(recipeID):
     if request.method == 'POST':
 
@@ -374,10 +384,12 @@ def update(recipeID):
                            ingredients=get_ingredients(), units=__units__, tags=__tags__, pageId=recipeID)
 
 
-@bp.route('/<name_key>/delete', methods=('GET', 'POST',))
+@bp.route('/<name_key>/delete', methods=('POST',))
+@login_required
 def delete(name_key):
     db = get_db()
     db.execute('DELETE FROM recipe WHERE id = ?', (name_key,))
     db.execute('DELETE FROM recipeIngredientRelationship WHERE recipeID = ?', (name_key,))
+    db.execute('DELETE FROM mealRecipeRelationship WHERE recipeID = ?', (name_key,))
     db.commit()
     return redirect(url_for('recipes.index'))
