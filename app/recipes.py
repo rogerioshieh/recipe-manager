@@ -99,12 +99,15 @@ def get_total_price(recipeID):
         for ing in recipe[1]:
             ing_id = str(ing['ingredientID'])
             ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                                ing_id).fetchone()
+                                (ing_id,)).fetchone()
 
             quantity_g_ml = convert(ing['units'], ing['quantity'])
 
-            prices.append(((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
-                            ) * quantity_g_ml) / (100 * servings))
+            denominator = convert(ing_db['price_size_unit'], ing_db['price_size'])
+            if denominator == 0:
+                denominator = 1
+
+            prices.append(((ing_db['price'] / denominator) * quantity_g_ml) / (100 * servings))
 
     return round(sum(prices), 2)
 
@@ -205,26 +208,35 @@ def display_recipe(recipeID):
 
             ing_id = str(ing['ingredientID'])
             ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                                ing_id).fetchone()
+                                (ing_id,)).fetchone()
             ing_names.append(ing_db['name'])
 
             macro_db = db.execute(
                 'SELECT carbs, fat, protein, calories, portion_size, '
                 'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
-                (ing_id)).fetchone()
+                (ing_id,)).fetchone()
 
             macros_ing = [macro_db['carbs'], macro_db['fat'],
                          macro_db['protein'], macro_db['calories']]
 
             quantity_g_ml = convert(ing['units'], ing['quantity'])
+            if quantity_g_ml == 0:
+                quantity_g_ml = 1
             ratio = macro_db['portion_converted'] / quantity_g_ml
 
             # appends a list of ingredient macros
+            if ratio == 0:
+                ratio = 1
+
             macros_recipe.append([round(x / servings / ratio, 1) for x in macros_ing])
 
             macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
 
-            prices.append(((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
+            denominator = convert(ing_db['price_size_unit'], ing_db['price_size'])
+            if denominator == 0:
+                denominator = 1
+
+            prices.append(((ing_db['price'] / denominator
                             ) * quantity_g_ml ) / (100 * servings))
 
     recipe.append(ing_names)
