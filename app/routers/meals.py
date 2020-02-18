@@ -1,147 +1,25 @@
 """
-Blueprint for recipes.
+Blueprint for meals.
 
 Views:
-- Index (displays most recently added recipes)
+- Index (displays meals organized by tags, in alphatical order)
 - Create
 - Update
-- Recipe (shows recipe details)
+- Display (shows meals details)
 - Delete (does not have a template)
-
-TODO:
-- add search bar to ingredient drop down
 """
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
-
 from app.routers.auth import login_required
 from app.db import get_db
+from app.helpers import get_recipes, get_macros_price, get_meal_price, get_servings
 
 bp = Blueprint("meals", __name__, url_prefix="/meals")
 
 __tags__ = ['meal_prep', 'easy', 'weekend', 'brunch', 'other']
-
-
-def get_recipes():
-    res = []
-    for recipe in get_db().execute('SELECT * FROM recipe ORDER BY title ASC').fetchall():
-        res.append(recipe['title'])
-
-    return sorted(res)
-
-
-def get_meal(meal_id):
-    meal = get_db().execute(
-        'SELECT * FROM meal WHERE id = ?',
-        (int(meal_id),)
-    ).fetchone()
-
-    return meal if meal is not None else abort(404, f"{meal_id} is not in the Meal table.")
-
-
-def convert(unit, size):
-    size = float(size)
-    if unit == 'g' or unit == 'ml':
-        return size
-
-    weights = {'kg', 'oz', 'lb'}
-    volumes = {'cup', 'l', 'gal', 'T', 't'}
-
-    if unit in weights:
-        if unit == 'kg':
-            res = size * 1000
-        elif unit == 'oz':
-            res = size * 28.35
-        elif unit == 'lb':
-            res = size * 454
-
-    elif unit in volumes:
-        if unit == 'cup':
-            res = size * 236.58
-        elif unit == 'l':
-            res = size * 1000
-        elif unit == 'gal':
-            res = size * 3785.41
-        elif unit == 'T':
-            res = size * 15
-        elif unit == 't':
-            res = size * 5
-
-    else:
-        res = 0
-
-    return res
-
-
-def get_macros_price(recipe, desired_servings):
-    """
-    :param desired_servings:
-    :param recipe: SQL object
-    :returns: list(list(int), list(int)) of carbs, fat, protein, calories
-    """
-    db = get_db()
-    ings = db.execute(
-        'SELECT * from recipeIngredientRelationship WHERE recipeID=(?)',
-        (recipe['id'],)
-    ).fetchall()
-
-    servings = recipe['servings'] if recipe['servings'] else 1
-    macro_totals = [0, 0, 0, 0]  # carbs, protein, fat, calories
-    prices_total = 0
-    res = []
-
-    for ing in ings:
-        ing_id = str(ing['ingredientID'])
-        ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                            (ing_id)).fetchone()
-
-        macro_db = db.execute(
-            'SELECT carbs, fat, protein, calories, portion_size, '
-            'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
-            (ing_id)).fetchone()
-
-        macros_ing = [macro_db['carbs'], macro_db['fat'],
-                      macro_db['protein'], macro_db['calories']]
-
-        quantity_g_ml = convert(ing['units'], ing['quantity'])
-        ratio = macro_db['portion_converted'] / quantity_g_ml
-
-        # updates macro_totals with recipe macros
-        macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
-
-        prices_total += ((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
-                          ) * quantity_g_ml) / (100 * servings)
-
-    res.append([round(x * servings / desired_servings, 1) for x in macro_totals])
-    res.append(round(prices_total * servings / desired_servings, 2))
-
-    return res
-
-
-def get_total_price(meal_id):
-
-    db = get_db()
-    servings = db.execute('SELECT servings FROM mealRecipeRelationship WHERE mealID=?', str(meal_id)).fetchone()['servings']
-
-    recipe_ids = db.execute('SELECT * FROM mealRecipeRelationship WHERE mealID=?', str(meal_id)).fetchall()
-
-    prices = []
-
-    for recipe in recipe_ids:
-        recipe_db = db.execute('SELECT * FROM recipe WHERE id=(?)', (recipe['recipeID'],)).fetchone()
-        prices.append(get_macros_price(recipe_db, int(servings))[1])
-
-    print(sum(prices))
-    return sum(prices)
-
-
-def get_servings(meal_id):
-
-    db = get_db()
-    return db.execute('SELECT servings FROM mealRecipeRelationship WHERE mealID=?', (meal_id,)).fetchone()['servings']
 
 
 @bp.route('/')
@@ -171,23 +49,23 @@ def index():
         print(get_servings(meal['id']))
         if meal['tag'] == 'meal_prep':
             meal_prep.append(meal)
-            meal_prep_p.append(get_total_price(meal['id']))
+            meal_prep_p.append(get_meal_price(meal['id']))
             meal_prep_s.append(get_servings(meal['id']))
         elif meal['tag'] == 'easy':
             easy.append(meal)
-            easy_p.append(get_total_price(meal['id']))
+            easy_p.append(get_meal_price(meal['id']))
             easy_s.append(get_servings(meal['id']))
         elif meal['tag'] == 'weekend':
             weekend.append(meal)
-            weekend_p.append(get_total_price(meal['id']))
+            weekend_p.append(get_meal_price(meal['id']))
             weekend_s.append(get_servings(meal['id']))
         elif meal['tag'] == 'brunch':
             brunch.append(meal)
-            brunch_p.append(get_total_price(meal['id']))
+            brunch_p.append(get_meal_price(meal['id']))
             brunch_s.append(get_servings(meal['id']))
         elif meal['tag'] == 'other':
             other.append(meal)
-            other_p.append(get_total_price(meal['id']))
+            other_p.append(get_meal_price(meal['id']))
             other_s.append(get_servings(meal['id']))
 
     meals = [meal_prep, easy, weekend, brunch, other]
@@ -212,13 +90,6 @@ def index():
     servings = [list(i) for i in zip(*servings)]
 
     return render_template('meals/index.html', meals=meals, tags=__tags__, prices=prices, servings=servings)
-
-
-'''
-Displays a recipe given its index number.
-==> recipe = [mealSQL, list(recipeSQL), ing names: list(str), 
-macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
-'''
 
 
 @bp.route('/<meal_id>/')

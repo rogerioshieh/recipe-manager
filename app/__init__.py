@@ -24,10 +24,7 @@ def create_app(test_config=None):
         pass
 
     from . import db
-    from app.routers import recipes
-    from app.routers import meals
-    from app.routers import ingredients
-    from app.routers import auth
+    from app.routers import recipes, meals, ingredients, auth
     db.init_app(app)
 
     app.register_blueprint(auth.bp)
