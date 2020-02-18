@@ -23,7 +23,11 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import db, auth, ingredients, recipes, meals
+    from . import db
+    from app.routers import recipes
+    from app.routers import meals
+    from app.routers import ingredients
+    from app.routers import auth
     db.init_app(app)
 
     app.register_blueprint(auth.bp)
