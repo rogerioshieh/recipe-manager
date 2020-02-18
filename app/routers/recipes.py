@@ -2,114 +2,26 @@
 Blueprint for recipes.
 
 Views:
-- Index (displays most recently added recipes)
+- Index (displays recipes by tags, organized in alphabetical order)
 - Create
 - Update
 - Display (shows recipe details)
 - Delete (does not have a template)
-
-TODO:
-- add search bar to ingredient drop down
 """
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
-
 from app.routers.auth import login_required
 from app.db import get_db
+from app.helpers import get_ingredients, get_recipe, convert, get_recipe_price
 import re
 
 bp = Blueprint("recipes", __name__, url_prefix="/recipes")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 __tags__ = ['starches', 'proteins', 'beans', 'vegetables', 'dessert', 'sauces', 'spices', 'others']
-
-def get_ingredients():
-
-    res = []
-    for ing in get_db().execute('SELECT * FROM ingredient ORDER BY name ASC').fetchall():
-        res.append(ing['name'])
-
-    return sorted(res)
-
-
-def get_recipe(name_key):
-    recipe = get_db().execute(
-        'SELECT *'
-        ' FROM recipe'
-        ' WHERE id = ?',
-        (int(name_key),)
-    ).fetchone()
-
-    if recipe is None:
-        abort(404, "{0} is not in the Ingredient table.".format(name_key))
-
-    return recipe
-
-
-def convert(unit, size):
-    size = float(size)
-    if unit == 'g' or unit == 'ml':
-        return size
-
-    weights = {'kg', 'oz', 'lb'}
-    volumes = {'cup', 'l', 'gal', 'T', 't'}
-
-    if unit in weights:
-        if unit == 'kg':
-            res = size * 1000
-        elif unit == 'oz':
-            res = size * 28.35
-        elif unit == 'lb':
-            res = size * 454
-
-    elif unit in volumes:
-        if unit == 'cup':
-            res = size * 236.58
-        elif unit == 'l':
-            res = size * 1000
-        elif unit == 'gal':
-            res = size * 3785.41
-        elif unit == 'T':
-            res = size * 15
-        elif unit == 't':
-            res = size * 5
-
-    else:
-        res = size #avoids division by 0
-
-    return res
-
-def get_total_price(recipeID):
-    db = get_db()
-    recipeID = str(recipeID)
-    recipe = db.execute('SELECT * from RECIPE where id = ?', (recipeID)).fetchall()
-
-    recipe.append(db.execute(
-        'SELECT ingredientID, quantity, units FROM recipeIngredientRelationship'
-        ' WHERE recipeID=(?)', (recipeID,)
-    ).fetchall())
-
-    servings = recipe[0]['servings'] if recipe[0]['servings'] else 1
-    prices = []
-
-    if recipe[1]:
-        for ing in recipe[1]:
-            ing_id = str(ing['ingredientID'])
-            ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                                (ing_id,)).fetchone()
-
-            quantity_g_ml = convert(ing['units'], ing['quantity'])
-
-            denominator = convert(ing_db['price_size_unit'], ing_db['price_size'])
-            if denominator == 0:
-                denominator = 1
-
-            prices.append(((ing_db['price'] / denominator) * quantity_g_ml) / (100 * servings))
-
-    return round(sum(prices), 2)
 
 
 @bp.route('/')
@@ -137,28 +49,28 @@ def index():
     for recipe in recipes_db: # populate lists
         if recipe['tag'] == 'starches':
             starches.append(recipe)
-            starches_p.append(get_total_price(recipe['id']))
+            starches_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'proteins':
             proteins.append(recipe)
-            proteins_p.append(get_total_price(recipe['id']))
+            proteins_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'beans':
             beans.append(recipe)
-            beans_p.append(get_total_price(recipe['id']))
+            beans_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'vegetables':
             vegetables.append(recipe)
-            vegetables_p.append(get_total_price(recipe['id']))
+            vegetables_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'dessert':
             dessert.append(recipe)
-            dessert_p.append(get_total_price(recipe['id']))
+            dessert_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'sauces':
             sauces.append(recipe)
-            sauces_p.append(get_total_price(recipe['id']))
+            sauces_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'spices':
             spices.append(recipe)
-            spices_p.append(get_total_price(recipe['id']))
+            spices_p.append(get_recipe_price(recipe['id']))
         elif recipe['tag'] == 'others':
             others.append(recipe)
-            others_p.append(get_total_price(recipe['id']))
+            others_p.append(get_recipe_price(recipe['id']))
 
     recipes = [starches, proteins, beans, vegetables, dessert, sauces, spices, others]
     prices = [starches_p, proteins_p, beans_p, vegetables_p, dessert_p, sauces_p, spices_p, others_p]
@@ -178,13 +90,13 @@ def index():
     return render_template('recipes/index.html', recipes=recipes, tags=__tags__, prices=prices)
 
 
-'''
-Displays a recipe given its index number.
-==> recipe = [recipeSQL, list(ingSQL), ing_names: list(str), 
-macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
-'''
 @bp.route('/<recipeID>/')
 def display_recipe(recipeID):
+    """
+    Displays a recipe given its index number.
+    ==> recipe = [recipeSQL, list(ingSQL), ing_names: list(str),
+    macros_ing: list(int)[ing caloric values], macro_totals: list(int)]
+    """
     db = get_db()
     recipe = db.execute('SELECT * from RECIPE where id = ?', (recipeID)).fetchall()
 
@@ -271,7 +183,6 @@ def create():
             flash(error)
 
         else:
-            print(data)
             db.execute(
                 'INSERT OR REPLACE INTO recipe (author_id, title, body, servings, tag)'
                 ' VALUES (?, ?, ?, ?, ?)',

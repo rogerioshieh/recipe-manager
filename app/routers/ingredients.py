@@ -2,76 +2,24 @@
 Blueprint for ingredients.
 
 Views:
-- Index (displays most recently added ingredients)
+- Index (displays ingredients by tags, organized alphabetically)
 - Create
 - Update
 - Delete (does not have a template)
-
-TODO:
-- Search bar?
 """
 
 from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
-from werkzeug.exceptions import abort
-
 from app.routers.auth import login_required
 from app.db import get_db
+from app.helpers import convert, get_ing
 import re
 
 bp = Blueprint("ingredients", __name__, url_prefix="/ingredients")
 
 __units__ = ['g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit']
 __tags__ = ['carbs', 'fats', 'proteins', 'vegetables', 'legumes', 'fruit', 'nuts', 'sauces', 'dairy', 'spices', 'others']
-
-'''
-This function converts a given unit to either grams or ml.
-'''
-def convert(unit, size):
-    size = float(size)
-    if unit == 'g' or unit == 'ml':
-        return size
-
-    weights = {'kg', 'oz', 'lb'}
-    volumes = {'cup', 'l', 'gal', 'T', 't'}
-
-    if unit in weights:
-        if unit == 'kg':
-            res = size * 1000
-        elif unit == 'oz':
-            res = size * 28.35
-        elif unit == 'lb':
-            res = size * 454
-
-    elif unit in volumes:
-        if unit == 'cup':
-            res = size * 236.58
-        elif unit == 'l':
-            res = size * 1000
-        elif unit == 'gal':
-            res = size * 3785.41
-        elif unit == 'T':
-            res = size * 15
-        elif unit == 't':
-            res = size * 5
-
-    else:
-        res = 0
-
-    return res
-
-
-def get_ing(name_key):
-    ing = get_db().execute(
-        'SELECT * FROM ingredient WHERE name_key = ?',
-        (name_key,)
-    ).fetchone()
-
-    if ing is None:
-        abort(404, f"{name_key} is not in the Ingredient table.")
-
-    return ing
 
 
 @bp.route('/')
