@@ -15,7 +15,7 @@ from flask import (
 from werkzeug.exceptions import abort
 from app.routers.auth import login_required
 from app.db import get_db
-from app.helpers import get_recipes, get_macros_price, get_meal_price, get_servings
+from app.helpers import get_recipes, get_meal, get_macros_price, get_meal_price, get_servings
 
 bp = Blueprint("meals", __name__, url_prefix="/meals")
 
