@@ -17,7 +17,7 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from app.auth import login_required
+from app.routers.auth import login_required
 from app.db import get_db
 import re
 
@@ -78,7 +78,7 @@ def convert(unit, size):
             res = size * 5
 
     else:
-        res = 0
+        res = size #avoids division by 0
 
     return res
 

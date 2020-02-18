@@ -12,11 +12,11 @@ TODO:
 """
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
 
-from app.auth import login_required
+from app.routers.auth import login_required
 from app.db import get_db
 import re
 
