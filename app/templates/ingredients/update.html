@@ -143,18 +143,18 @@
                         </option>
                     {% else %}
                         <option value={{ tag }}>
-                        {% if tag == "carbs" %} Grains, Starches, & Sugars
-                        {% elif tag == "fats" %} Fats, Oils, & Spreads
-                        {% elif tag == "proteins" %} Proteins
-                        {% elif tag == "vegetables" %} Veggies
-                        {% elif tag == "legumes" %} Legumes
-                        {% elif tag == "fruit" %} Fruits
-                        {% elif tag == "nuts" %} Nuts & Seeds
-                        {% elif tag == "sauces" %} Sauces and Condiments
-                        {% elif tag == "dairy" %} Dairy
-                        {% elif tag == "spices" %} Spices
-                        {% elif tag == "others" %} Others
-                        {% endif %}
+                            {% if tag == "carbs" %} Grains, Starches, & Sugars
+                            {% elif tag == "fats" %} Fats, Oils, & Spreads
+                            {% elif tag == "proteins" %} Proteins
+                            {% elif tag == "vegetables" %} Veggies
+                            {% elif tag == "legumes" %} Legumes
+                            {% elif tag == "fruit" %} Fruits
+                            {% elif tag == "nuts" %} Nuts & Seeds
+                            {% elif tag == "sauces" %} Sauces and Condiments
+                            {% elif tag == "dairy" %} Dairy
+                            {% elif tag == "spices" %} Spices
+                            {% elif tag == "others" %} Others
+                            {% endif %}
                         </option>
                     {% endif %}
                 {% endfor %}
@@ -163,15 +163,17 @@
 
         <label for="notes">NOTES</label>
         <textarea class="notes" name="notes" id="notes">{{ ingredient['notes'] }}</textarea>
-
+        <em>Note: all recipes containing this ingredient will be uploaded as well.</em>
         <input type="submit" value="Save">
+
     </form>
 
     <hr>
     <form action="{{ url_for('ingredients.delete', name_key=ingredient['name_key']) }}" method="post">
+        <em style="color: crimson">WARNING: ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED.</em>
         <input class="danger" type="submit" value="Delete"
                onclick="return confirm('ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED. \n \n Are you sure?');">
-        <em>NOTE: ALL RECIPES CONTAINING THIS INGREDIENT WILL BE DELETED.</em>
+
     </form>
 
 {% endblock %}
