@@ -180,9 +180,9 @@ def update(name_key):
             db.execute(
                 'UPDATE ingredient SET name = ?, name_key = ?, portion_size = ?, portion_size_unit = ?, portion_converted = ?, '
                 'protein = ?, fat = ?, carbs = ?, calories = ?, price = ?, price_size = ?, price_size_unit = ?, tag = ?, notes = ?'
-                ' WHERE name_key = ?',
+                ' WHERE id = ?',
                 (name, name_key, portion_size, portion_size_unit, portion_converted, protein, fat,
-                 carbs, calories, price, price_size, price_size_unit, tag, notes, name_key)
+                 carbs, calories, price, price_size, price_size_unit, tag, notes, ingredient['id'])
             )
             db.commit()
             return redirect(url_for('ingredients.index'))
