@@ -128,6 +128,7 @@
         <input type="button" value="Submit" onclick="handleSubmit(event)">
         <input type="reset" name="reset1">
     </div>
+        <em>Note: all meals containing this ingredient will be uploaded as well.</em>
 
     <!-- Template for new ingredient-->
     <div id="newlinktpl" style="display:none">
@@ -160,6 +161,7 @@
                 </option>
             {% endfor %}
         </select>
+
     </div>
 
     <script type="text/javascript">
@@ -221,6 +223,7 @@
                 body: JSON.stringify(data)
             });
 
+            alert("SUCCESS!! Recipe updated in the database.");
         }
     </script>
 {% endblock %}
