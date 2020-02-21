@@ -49,23 +49,23 @@ def index():
         servings = get_servings(meal['id'])
         if meal['tag'] == 'meal_prep':
             meal_prep.append(meal)
-            meal_prep_p.append(get_meal_price(meal['id'])/servings)
+            meal_prep_p.append(round(get_meal_price(meal['id'])/servings, 2))
             meal_prep_s.append(servings)
         elif meal['tag'] == 'easy':
             easy.append(meal)
-            easy_p.append(get_meal_price(meal['id'])/servings)
+            easy_p.append(round(get_meal_price(meal['id'])/servings, 2))
             easy_s.append(servings)
         elif meal['tag'] == 'weekend':
             weekend.append(meal)
-            weekend_p.append(get_meal_price(meal['id'])/servings)
+            weekend_p.append(round(get_meal_price(meal['id'])/servings, 2))
             weekend_s.append(servings)
         elif meal['tag'] == 'brunch':
             brunch.append(meal)
-            brunch_p.append(get_meal_price(meal['id'])/servings)
+            brunch_p.append(round(get_meal_price(meal['id'])/servings, 2))
             brunch_s.append(servings)
         elif meal['tag'] == 'other':
             other.append(meal)
-            other_p.append(get_meal_price(meal['id'])/servings)
+            other_p.append(round(get_meal_price(meal['id'])/servings, 2))
             other_s.append(servings)
 
     meals = [meal_prep, easy, weekend, brunch, other]
