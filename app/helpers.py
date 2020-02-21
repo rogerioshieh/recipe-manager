@@ -146,7 +146,7 @@ def get_meal_price(meal_id):
 
     for recipe in recipe_ids:
         recipe_db = db.execute('SELECT * FROM recipe WHERE id=(?)', (recipe['recipeID'],)).fetchone()
-        prices.append((get_macros_price(recipe_db, int(servings))[1])/servings)
+        prices.append((get_macros_price(recipe_db, recipe_db['servings'] / servings)[1]))
 
     return round(sum(prices), 2)
 
