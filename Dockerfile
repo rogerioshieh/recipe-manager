@@ -11,11 +11,14 @@ WORKDIR /srv
 #ADD requirements.txt .
 
 # Add the project
+ADD requirements.txt ./
+RUN pip install -r requirements.txt
+
 ADD setup.py ./
 ADD instance ./instance
 ADD app ./app
 RUN python setup.py develop
-#--user
+#RUN python setup.py develop --user
 
 #ENV PATH $PATH:/home/app/.local/bin
 
