@@ -78,9 +78,10 @@
 
     <form action="{{ url_for('recipes.delete', name_key=recipe[0]['id']) }}" method="post">
 
-        <div><input class="danger" type="submit" value="Delete"
-                    onclick="return confirm('ALL MEALS CONTAINING THE SELECTED RECIPE WILL BE DELETED AS WELL. \n \n Are you sure?');">
-            Note: ALL MEALS CONTAINING THE SELECTED RECIPE WILL BE DELETED AS WELL.
+        <div>
+            <input class="danger" type="submit" value="Delete"
+                   onclick="return confirm('ALL MEALS CONTAINING THE SELECTED RECIPE WILL BE DELETED AS WELL. \n \n Are you sure?');">
         </div>
+        <em style="color: crimson">WARNING: ALL MEALS CONTAINING THIS INGREDIENT WILL BE DELETED AS WELL.</em>
     </form>
 {% endblock %}
