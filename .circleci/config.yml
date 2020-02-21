@@ -15,6 +15,7 @@ jobs:
           command: |
             python setup.py develop --user
             python app/tests/TestClasses/TestHelpers.py
+            python app/tests/TestClasses/TestTemplates.py
           name: Test
 
 workflows:
