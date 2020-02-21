@@ -12,7 +12,8 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: ./manage.py test
+          command: |
+            python app/tests/TestClasses/TestHelpers.py
           name: Test
 
 workflows:
