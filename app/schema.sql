@@ -74,6 +74,5 @@ CREATE TABLE recipeIngredientRelationship(
     quantity FLOAT(2) NOT NULL,
     units TEXT CHECK ( units in ('g', 'kg', 'oz', 'lb', 'cup', 'ml', 'l', 'gal', 'T', 't', 'in', 'unit') ) NOT NULL,
     FOREIGN KEY (recipeID) REFERENCES recipe(id),
-    FOREIGN KEY (ingredientID) REFERENCES ingredient(id),
-    UNIQUE (recipeID, ingredientID)
+    FOREIGN KEY (ingredientID) REFERENCES ingredient(id)
 );
