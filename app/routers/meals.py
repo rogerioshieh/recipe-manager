@@ -15,7 +15,7 @@ from flask import (
 from werkzeug.exceptions import abort
 from app.routers.auth import login_required
 from app.db import get_db
-from app.helpers import get_recipes, get_macros_price, get_meal_price, get_servings
+from app.helpers import get_recipes, get_meal, get_macros_price, get_meal_price, get_servings
 
 bp = Blueprint("meals", __name__, url_prefix="/meals")
 
@@ -46,27 +46,27 @@ def index():
     meal_prep_s, easy_s, weekend_s, brunch_s, other_s = ([] for i in range(5))  # prices
 
     for meal in meals_db:  # populate lists
-        print(get_servings(meal['id']))
+        servings = get_servings(meal['id'])
         if meal['tag'] == 'meal_prep':
             meal_prep.append(meal)
-            meal_prep_p.append(get_meal_price(meal['id']))
-            meal_prep_s.append(get_servings(meal['id']))
+            meal_prep_p.append(get_meal_price(meal['id'])/servings)
+            meal_prep_s.append(servings)
         elif meal['tag'] == 'easy':
             easy.append(meal)
-            easy_p.append(get_meal_price(meal['id']))
-            easy_s.append(get_servings(meal['id']))
+            easy_p.append(get_meal_price(meal['id'])/servings)
+            easy_s.append(servings)
         elif meal['tag'] == 'weekend':
             weekend.append(meal)
-            weekend_p.append(get_meal_price(meal['id']))
-            weekend_s.append(get_servings(meal['id']))
+            weekend_p.append(get_meal_price(meal['id'])/servings)
+            weekend_s.append(servings)
         elif meal['tag'] == 'brunch':
             brunch.append(meal)
-            brunch_p.append(get_meal_price(meal['id']))
-            brunch_s.append(get_servings(meal['id']))
+            brunch_p.append(get_meal_price(meal['id'])/servings)
+            brunch_s.append(servings)
         elif meal['tag'] == 'other':
             other.append(meal)
-            other_p.append(get_meal_price(meal['id']))
-            other_s.append(get_servings(meal['id']))
+            other_p.append(get_meal_price(meal['id'])/servings)
+            other_s.append(servings)
 
     meals = [meal_prep, easy, weekend, brunch, other]
     prices = [meal_prep_p, easy_p, weekend_p, brunch_p, other_p]
@@ -115,16 +115,22 @@ def display_meal(meal_id):
     if recipes:
         for recipe in recipes:
             recipe_id = str(recipe['recipeID'])
-            print(recipe_id)
             recipe_db = db.execute('SELECT * FROM recipe WHERE id=?',
-                                   (recipe_id)).fetchone()
+                                   recipe_id).fetchone()
             recipes_db.append(recipe_db)
 
             temp = get_macros_price(recipe_db, servings)
-            macros_per_recipe.append(temp[0])
-            prices.append(temp[1])
 
-            macro_totals = [round(x + y, 1) for x, y in zip(macro_totals, temp[0])]
+            ratio = recipe_db['servings'] / servings
+            if ratio == 0:
+                ratio = 1
+
+            temp[0] = [round(x/ratio, 1) for x in temp[0]]
+
+            macros_per_recipe.append(temp[0])
+            prices.append(temp[1]/ratio)
+
+            macro_totals = [round((x + y), 1) for x, y in zip(macro_totals, temp[0])]
 
     return render_template('meals/display.html', meal=meal, recipes=recipes_db,
                            servings=servings, macro_totals=macro_totals, total_price=round(sum(prices), 2),
@@ -186,7 +192,6 @@ def update(meal_id):
 
         db = get_db()
         data = request.get_json()
-        print(data)
 
         error = None
 

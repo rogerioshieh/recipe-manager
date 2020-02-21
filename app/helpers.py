@@ -6,12 +6,14 @@ from werkzeug.exceptions import abort
 from app.db import get_db
 
 
-def convert(unit, size):
+def convert(unit, size, ing=None):
     """
     Converts a given unit to grams or ml.
     :param unit: unit to be converted
-    :type unit: str in ('kg', 'oz', 'lb', 'cup', 'l', 'gal', 'T', 't')
+    :type unit: str in ('kg', 'oz', 'lb', 'cup', 'l', 'gal', 'T', 't', 'unit')
     :param size: how many servings
+    :param ing: ingredients that can be measured in volume AND weight (e.g., flour, oats, sugar, onions)
+    :type ing: str
     @:returns res: int in g or ml
     """
 
@@ -43,7 +45,7 @@ def convert(unit, size):
             res = size * 5
 
     else:
-        res = 0
+        res = size
 
     return res
 
@@ -104,12 +106,12 @@ def get_macros_price(recipe, desired_servings):
     for ing in ings:
         ing_id = str(ing['ingredientID'])
         ing_db = db.execute('SELECT * FROM ingredient WHERE id=?',
-                            (ing_id)).fetchone()
+                            (ing_id,)).fetchone()
 
         macro_db = db.execute(
             'SELECT carbs, fat, protein, calories, portion_size, '
             'portion_size_unit, portion_converted FROM ingredient WHERE id=?',
-            (ing_id)).fetchone()
+            (ing_id,)).fetchone()
 
         macros_ing = [macro_db['carbs'], macro_db['fat'],
                       macro_db['protein'], macro_db['calories']]
@@ -118,7 +120,9 @@ def get_macros_price(recipe, desired_servings):
         ratio = macro_db['portion_converted'] / quantity_g_ml
 
         # updates macro_totals with recipe macros
-        macro_totals = [x + (y / servings / ratio) for x, y in zip(macro_totals, macros_ing)]
+        if ratio == 0:
+            ratio = 1
+        macro_totals = [x + (y / servings / ratio ) for x, y in zip(macro_totals, macros_ing)]
 
         prices_total += ((ing_db['price'] / convert(ing_db['price_size_unit'], ing_db['price_size'])
                           ) * quantity_g_ml) / (100 * servings)
@@ -142,9 +146,9 @@ def get_meal_price(meal_id):
 
     for recipe in recipe_ids:
         recipe_db = db.execute('SELECT * FROM recipe WHERE id=(?)', (recipe['recipeID'],)).fetchone()
-        prices.append(get_macros_price(recipe_db, int(servings))[1])
+        prices.append((get_macros_price(recipe_db, int(servings))[1])/servings)
 
-    return sum(prices)
+    return round(sum(prices), 2)
 
 
 def get_ing(name_key):
