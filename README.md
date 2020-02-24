@@ -11,3 +11,5 @@ On recipe-manager folder, run:
 <code>
 docker-compose up
 </code>
+
+and access the app on <code>localhost:1234</code>
