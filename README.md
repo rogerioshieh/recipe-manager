@@ -1,4 +1,6 @@
-# RECIPE MANAGER
+# MEAL PREP APP
+
+[Live version on https://bonapp.kitchen](https://bonapp.kitchen "Meal Prep App")
 
 A web app that allows users to record their recipes (the ingredient database will be autopopulated), showing them the price and macronutrient information per serving. 
 
