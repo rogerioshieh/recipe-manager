@@ -1,6 +1,6 @@
 import unittest
-from app.tests.BaseTest import BaseTest
-from app.tests.helpers_unittest import register, login, logout, create_ingredient, create_recipe
+from tests.BaseTest import BaseTest
+from tests.helpers_unittest import register, login, logout, create_ingredient, create_recipe
 
 
 class TestTemplates(BaseTest):

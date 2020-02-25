@@ -7,7 +7,7 @@ Useful resources:
 import unittest
 from random import randint
 import app.helpers as h
-from app.tests.BaseTest import BaseTest
+from tests.BaseTest import BaseTest
 
 
 class TestHelpers(BaseTest):
@@ -34,10 +34,11 @@ class TestHelpers(BaseTest):
         self.assertAlmostEqual(h.get_recipe_price(2), 5.70)
 
     def get_meal_price(self):
-        pass
+        self.assertNotEqual(h.get_meal_price(1), 3.49)
 
     def get_macros_price(self):
-        pass
+        self.assertNotEqual(h.get_macros_price(1), [[0, 0, 0, 0], 3.49])
+        self.assertNotEqual(h.get_macros_price(2), [[0, 0, 0, 0], 3.49])
 
 
 if __name__ == '__main__':
