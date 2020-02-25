@@ -8,7 +8,7 @@ The app provides a pre-populated ingredient database, with the following informa
 
 ![image-20200225120036061](./images/image1.png)
 
-<center><em>Example of the info in ingredient in the database.</em></center>
+*Example of the info in ingredient in the database.*
 
 </br></br>
 
