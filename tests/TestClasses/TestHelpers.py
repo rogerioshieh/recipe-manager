@@ -7,7 +7,7 @@ Useful resources:
 import unittest
 from random import randint
 import app.helpers as h
-from app.tests.BaseTest import BaseTest
+from tests.BaseTest import BaseTest
 
 
 class TestHelpers(BaseTest):
