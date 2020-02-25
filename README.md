@@ -10,17 +10,23 @@ The app provides a pre-populated ingredient database, with the following informa
 
 <center><em>Example of the info in ingredient in the database.</em></center>
 
+
+
 When creating a recipe, the user selects the ingredients and its quantity used, along with the number of yielded servings. The app automatically converts the units of the ingredients in the database to the units stipulated in the recipe (all units are accepted, including grams, kg, ml, cup, etc.). For instance:
 
 ![image-20200225120229379](./images/image2.png)
 
 <center><em>Pasta was inserted in lbs in the ingredients database, but in ounces in the recipe above. The app will convert it to calculate its price and macronutrient info. </em></center>
 
+
+
 Users can create meals, which are a collection of recipes. Meals also convert servings from recipes automatically. For instance:
 
 ![image-20200225121032060](./images/image3.png)
 
 <center><em>The recipe "Tomato Sauce" yields 16 servings, but the meal "Pasta with tomato sauce" yields 2 servings. The app calculates the price and macronutrients accordingly.</em></center>
+
+
 
 ![image-20200225121804689](./images/image4.png)
 
