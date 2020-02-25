@@ -13,7 +13,7 @@ class BaseTest(TestCase):
 
     def create_app(self):
 
-        self.app = Flask(__name__, template_folder='app/templates')
+        self.app = Flask(__name__, template_folder='../app/templates')
         self.app.config['TESTING'] = True
         self.app.config['USERNAME'] = 'unittest'
         self.app.config['PASSWORD'] = 'unittest'
