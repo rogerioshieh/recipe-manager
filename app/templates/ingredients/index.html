@@ -64,7 +64,7 @@
                                              ${{ (ing['price'] /100)|int }}.00 per
                                             {{ ing['price_size']|int }}{{ ing['price_size_unit'] }}
                                         {% elif ing['price'] % 10 == 0 %}
-                                             ${{ (ing['price'] /100)|int }}0 per
+                                             ${{ (ing['price'] /100) }}0 per
                                             {{ ing['price_size']|int }}{{ ing['price_size_unit'] }}
                                         {% else %}
                                              ${{ ing['price']/100 }} per
