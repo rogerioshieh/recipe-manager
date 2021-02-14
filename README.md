@@ -48,7 +48,8 @@ I have implemented some unit and functional tests using unittest and flask-testi
 On recipe-manager folder, run:
 
 <code>
+docker build --no-cache
 docker-compose up
 </code>
 
-and access the app on <code>localhost:1234</code>
+and access the app on <code>localhost:4998</code>
