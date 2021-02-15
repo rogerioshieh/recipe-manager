@@ -1,6 +1,8 @@
-# MEAL PREP APP ([https://bonapp.kitchen](https://bonapp.kitchen "Meal Prep App"))
+# MEAL PREP APP
 
 ## OVERVIEW
+
+*This web app is currently deployed on [http://recipe-manager.us-east-1.elasticbeanstalk.com/recipes/](http://recipe-manager.us-east-1.elasticbeanstalk.com/recipes/ "Meal Prep App")*
 
 A web app that allows users to record their recipes, automatically calculating their price and macronutrient information per serving.
 
