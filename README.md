@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-*This web app is currently deployed on [http://recipe-manager.us-east-1.elasticbeanstalk.com/recipes/](http://recipe-manager.us-east-1.elasticbeanstalk.com/recipes/ "Meal Prep App")*
+*This web app is currently deployed on [http://recipe-manager.us-east-1.elasticbeanstalk.com/](http://recipe-manager.us-east-1.elasticbeanstalk.com/ "Meal Prep App")*
 
 A web app that allows users to record their recipes, automatically calculating their price and macronutrient information per serving.
 
@@ -40,12 +40,16 @@ Recipes and meals are unique to each user. In order to create recipes and meals,
 Unregistered users can see some demo recipes that I added (I have prepared all of them myself in the past few weeks!).
 
 
+## DEPLOYMENT
+
+This recipe is currently deployed using AWS Elastic Beanstalk with non-secure HTTP. 
+
 
 ## TESTING
 
 I have implemented some unit and functional tests using unittest and flask-testing libraries.
 
-# TO RUN
+# TO RUN LOCALLY
 
 On recipe-manager folder, run:
 
