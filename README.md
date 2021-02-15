@@ -58,4 +58,4 @@ docker build --no-cache
 docker-compose up
 ```
 
-and access the app on <code>localhost:4998</code>
+and access the app on <code>localhost:1234</code>
