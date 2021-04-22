@@ -54,7 +54,7 @@ I have implemented some unit and functional tests using unittest and flask-testi
 On recipe-manager folder, run:
 
 ```
-docker build --no-cache
+docker-compose build --no-cache
 docker-compose up
 ```
 
